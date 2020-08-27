@@ -8,7 +8,7 @@ import textInfos
 from scriptHandler import script
 from urllib import request, parse
 import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bs4 import BeautifulSoup
 import addonHandler
 addonHandler.initTranslation()
@@ -36,8 +36,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				parrafos = list(bs.section.article)
 				message=_("La definición de {arg0} es:").format(arg0=info.text)
 				for i in parrafos:
-					if i.string:
-						message=message+"\n"+i.string
+					if hasattr(i, "text"):
+						message=message+"\n"+i.text
 				ui.browseableMessage(message)
 		else:
 			ui.message(_("Caso de uso no implementado"))
