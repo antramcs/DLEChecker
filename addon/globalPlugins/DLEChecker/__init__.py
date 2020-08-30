@@ -26,7 +26,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			if not info or info.isCollapsed:
 				ui.message(_("Selecciona un texto primero."))
 			else:
-				argumentos = {"w": info.text}
+				argumentos = {"w": info.text.lower()}
 				argumentos_codificados = parse.urlencode(argumentos)
 				url = "https://dle.rae.es/?" + argumentos_codificados
 				req = request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0'})
@@ -34,10 +34,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				datos = html.read().decode('utf-8')
 				bs = BeautifulSoup(datos, 'html.parser')
 				parrafos = list(bs.section.article)
-				message=_("La definición de {arg0} es:").format(arg0=info.text)
+				message=_("")
 				for i in parrafos:
 					if hasattr(i, "text"):
-						message=message+"\n"+i.text
+						message=message+i.text+"\n"
 				ui.browseableMessage(message)
 		else:
 			ui.message(_("Caso de uso no implementado"))
