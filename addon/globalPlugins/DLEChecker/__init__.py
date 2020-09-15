@@ -16,28 +16,32 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	@script(gesture="kb:NVDA+shift+c")
 	def script_check_dle_term(self, gesture):
 		obj = api.getFocusObject()
-		treeInterceptor = obj.treeInterceptor
-		if hasattr(treeInterceptor, 'TextInfo') and not treeInterceptor.passThrough:
-			obj = treeInterceptor
+		selectedText = ""
+		
+		if hasattr(obj.treeInterceptor, 'TextInfo') and not obj.treeInterceptor.passThrough:
 			try:
-				info = obj.makeTextInfo(textInfos.POSITION_SELECTION)
+				info = obj.treeInterceptor.makeTextInfo(textInfos.POSITION_SELECTION)
+				if not info or info.isCollapsed:
+					ui.message(_("Selecciona un texto primero."))
+				else:
+					selectedText = info.text.lower()
 			except (RuntimeError, NotImplementedError):
-				info = Nonne
-			if not info or info.isCollapsed:
-				ui.message(_("Selecciona un texto primero."))
-			else:
-				argumentos = {"w": info.text.lower()}
-				argumentos_codificados = parse.urlencode(argumentos)
-				url = "https://dle.rae.es/?" + argumentos_codificados
-				req = request.Request(url, data=None, headers={'User-Agent': 'Mozilla/5.0'})
-				html = request.urlopen(req)
-				datos = html.read().decode('utf-8')
-				bs = BeautifulSoup(datos, 'html.parser')
-				parrafos = list(bs.section.article)
-				message=_("")
-				for i in parrafos:
-					if hasattr(i, "text"):
-						message=message+i.text+"\n"
-				ui.browseableMessage(message)
+				ui.message(_("Error en tiempo de ejecución."))
 		else:
-			ui.message(_("Caso de uso no implementado"))
+			selectedText = obj.selection.text
+			
+			argumentos = {"w": selectedText}
+			argumentos_codificados = parse.urlencode(argumentos)
+			url = "https://dle.rae.es/?" + argumentos_codificados
+			req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+			html = request.urlopen(req)
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			parrafos = list(bs.section.article)
+			message = _("")
+			
+			for i in parrafos:
+				if hasattr(i, 'text'):
+					message = message + i.text + "\n"
+			
+			ui.browseableMessage(message)
