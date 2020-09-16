@@ -38,7 +38,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				ui.message(_("Selecciona un texto primero."))
 				return
 		
-		argumentos = {"w": selectedText}
+		argumentos = {"w": selectedText.split(" ")[0]}
 		argumentos_codificados = parse.urlencode(argumentos)
 		url = "https://dle.rae.es/?" + argumentos_codificados
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
