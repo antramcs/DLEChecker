@@ -21,28 +21,37 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if hasattr(obj.treeInterceptor, 'TextInfo') and not obj.treeInterceptor.passThrough:
 			try:
 				info = obj.treeInterceptor.makeTextInfo(textInfos.POSITION_SELECTION)
-			except (RuntimeError, NotImplementedError):
+			except:
 				info = None
 			
 			if not info or info.isCollapsed:
 				ui.message(_("Selecciona un texto primero."))
+				return
 			else:
 				selectedText = info.text.lower()
 		else:
 			selectedText = obj.selection.text
 			
+			if obj.selection.text == "":
+				ui.message(_("Selecciona un texto primero."))
+				return
+		
 		argumentos = {"w": selectedText}
 		argumentos_codificados = parse.urlencode(argumentos)
 		url = "https://dle.rae.es/?" + argumentos_codificados
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		html = request.urlopen(req)
-		datos = html.read().decode('utf-8')
-		bs = BeautifulSoup(datos, 'html.parser')
-		parrafos = list(bs.section.article)
-		message = ""
 		
-		for i in parrafos:
-			if hasattr(i, 'text'):
-				message = _(message + i.text + "\n")
-		
-		ui.browseableMessage(message)
+		try:
+			html = request.urlopen(req)
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			parrafos = list(bs.section.article)
+			message = ""
+			
+			for i in parrafos:
+				if hasattr(i, 'text'):
+					message = _(message + i.text + "\n")
+			
+			ui.browseableMessage(message)
+		except:
+			ui.message("Error al intentar obtener la definición de la palabra.")
