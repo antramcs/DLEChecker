@@ -1,5 +1,7 @@
-# Autor: Antonio Cascales.
-# Descripción: Complemento que permite consultar un término en el Diccionario de la Lengua Española.
+#DLEChecker for NVDA.
+#This file is covered by the GNU General Public License.
+#See the file COPYING.txt for more details.
+#Copyright (C) 2020 Antonio Cascales <antonio.cascales@gmail.com> and Jose Manuel Delicado <jm.delicado@nvda.es>
 
 import globalPluginHandler
 import ui
@@ -13,7 +15,7 @@ from bs4 import BeautifulSoup
 import addonHandler
 addonHandler.initTranslation()
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
-	@script(gesture="kb:NVDA+shift+c")
+	@script(gesture="kb:NVDA+shift+c", description= _("Busca la definición de la palabra seleccionada en el Diccionario de la Lengua Española"), category= _("DLEChecker"))
 	def script_check_dle_term(self, gesture):
 		obj = api.getFocusObject()
 		selectedText = ""
@@ -54,4 +56,4 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			
 			ui.browseableMessage(message)
 		except:
-			ui.message("Error al intentar obtener la definición de la palabra.")
+			ui.message(_("Error al intentar obtener la definición de la palabra."))
