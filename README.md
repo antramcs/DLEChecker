@@ -15,3 +15,10 @@ El modo de uso es muy sencillo. Tan solo habrá que seleccionar cualquier palabr
 ### Atajos.
 
 El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de realizar la consulta a la web del Diccionario de la Lengua Española.
+
+## Registro de cambios.
+
+## Versión 1.1.
+
+* Corrección de un error que hacía fallar el complemento al intentar obtener la definición de una palabra en mayúsculas.
+* Sustitución del cuadro de diálogo de NVDA donde se mostraba la definición de la palabra por una interfaz gráfica más amigable, donde se han añadido también las opciones "Leer resultado", "Copiar al portapapeles" y "Salir". Puede navegarse a estas opciones pulsando tabulador desde el cuadro de edición. Agradecer a Héctor Benítez @HXeBoLaX su contribución.
