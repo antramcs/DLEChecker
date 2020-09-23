@@ -15,8 +15,7 @@ from urllib import request, parse
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bs4 import BeautifulSoup
-import addonHandler
-addonHandler.initTranslation()
+
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	@script(gesture="kb:NVDA+shift+c", description= _("Busca la definición de la palabra seleccionada en el Diccionario de la Lengua Española"), category= _("DLEChecker"))
 	def script_check_dle_term(self, gesture):
@@ -26,7 +25,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if hasattr(obj.treeInterceptor, 'TextInfo') and not obj.treeInterceptor.passThrough:
 			try:
 				info = obj.treeInterceptor.makeTextInfo(textInfos.POSITION_SELECTION)
-			except:
+			except (RuntimeError, NotImplementedError):
 				info = None
 			
 			if not info or info.isCollapsed:
@@ -35,7 +34,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			else:
 				selectedText = info.text.lower()
 		else:
-			selectedText = obj.selection.text.lower()
+			try:
+				selectedText = obj.selection.text.lower()
+			except (RuntimeError, NotImplementedError):
+				ui.message("Selecciona un texto primero.")
+				return
 			
 			if obj.selection.text == "":
 				ui.message(_("Selecciona un texto primero."))
