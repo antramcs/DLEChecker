@@ -41,7 +41,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				return
 			
 			if obj.selection.text == "":
-				ui.message(_("Selecciona un texto primero."))
+				#ui.message(_("Selecciona un texto primero."))
+				self.solicitarTermino()
 				return
 		
 		argumentos = {"w": selectedText.split(" ")[0]}
@@ -66,6 +67,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.ventanaMSG.Show()
 		except:
 			ui.message(_("Error al intentar obtener la definición de la palabra."))
+	
+	def solicitarTermino(self):
+		nuevoDialogo = wx.TextEntryDialog(None, "Introduce el término a buscar", "Buscar nueva definición")
+		
+		if nuevoDialogo.ShowModal() == wx.ID_OK:
+			print("Funciono.")
+		
+		nuevoDialogo.Destroy()
 
 class DialogoMsg(wx.Dialog):
 # Function taken from the add-on emoticons to center the window
