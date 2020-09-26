@@ -41,40 +41,37 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				return
 			
 			if obj.selection.text == "":
-				#ui.message(_("Selecciona un texto primero."))
-				self.solicitarTermino()
-				return
-		
-		argumentos = {"w": selectedText.split(" ")[0]}
-		argumentos_codificados = parse.urlencode(argumentos)
-		url = "https://dle.rae.es/?" + argumentos_codificados
-		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		
-		try:
-			html = request.urlopen(req)
-			datos = html.read().decode('utf-8')
-			bs = BeautifulSoup(datos, 'html.parser')
-			parrafos = list(bs.section.article)
-			message = ""
-			
-			for i in parrafos:
-				if hasattr(i, 'text'):
-					message = _(message + i.text + "\n")
-			
-#			ui.browseableMessage(message)
-			self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
-			gui.mainFrame.prePopup()
-			self.ventanaMSG.Show()
-		except:
-			ui.message(_("Error al intentar obtener la definición de la palabra."))
+				self.solicitarDefinicionABuscar()
 	
-	def solicitarTermino(self):
-		nuevoDialogo = wx.TextEntryDialog(None, "Introduce el término a buscar", "Buscar nueva definición")
-		
-		if nuevoDialogo.ShowModal() == wx.ID_OK:
-			print("Funciono.")
-		
-		nuevoDialogo.Destroy()
+	def obtenerDefinicion(self, palabra):
+			argumentos = {"w": palabra.split(" ")[0]}
+			argumentos_codificados = parse.urlencode(argumentos)
+			url = "https://dle.rae.es/?" + argumentos_codificados
+			req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+			
+			try:
+				html = request.urlopen(req)
+				datos = html.read().decode('utf-8')
+				bs = BeautifulSoup(datos, 'html.parser')
+				parrafos = list(bs.section.article)
+				message = ""
+				
+				for i in parrafos:
+					if hasattr(i, 'text'):
+						message = _(message + i.text + "\n")
+				
+#			ui.browseableMessage(message)
+				self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
+				gui.mainFrame.prePopup()
+				self.ventanaMSG.Show()
+			except:
+				ui.message(_("Error al intentar obtener la definición de la palabra."))
+	
+	def solicitarDefinicionABuscar(self):
+		nuevaBusqueda = NuevaBusqueda(None, "Nueva definición a buscar")
+		nuevaBusqueda.Show()
+		terminoABuscar = nuevaBusqueda.getTermino()
+		print(terminoABuscar)
 
 class DialogoMsg(wx.Dialog):
 # Function taken from the add-on emoticons to center the window
@@ -140,3 +137,44 @@ class DialogoMsg(wx.Dialog):
 	def onSalir(self, event):
 		self.Destroy()
 		gui.mainFrame.postPopup()
+
+class NuevaBusqueda(wx.Frame):
+	def __init__(self, parent, titulo):
+		super(NuevaBusqueda, self).__init__(parent, -1, title=titulo)
+		
+		self.termino = ""
+		
+		panel = wx.Panel(self)
+		
+		verticalBoxSizer = wx.BoxSizer(wx.VERTICAL)
+		horizontalBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
+		
+		self.cuadroEdicion = wx.TextCtrl(panel, -1, "")
+		
+		self.botonAceptar = wx.Button(panel, -1, "Aceptar")
+		self.Bind(wx.EVT_BUTTON, self.OnAceptar, self.botonAceptar)
+		
+		self.botonCancelar = wx.Button(panel, -1, "Cancelar")
+		self.Bind(wx.EVT_BUTTON, self.OnCancelar, self.botonCancelar)
+		
+		verticalBoxSizer.Add(self.cuadroEdicion, 1, wx.EXPAND)
+		
+		horizontalBoxSizer.Add(self.botonAceptar, 0, wx.CENTER)
+		horizontalBoxSizer.Add(self.botonCancelar, 0, wx.CENTER)
+		
+		verticalBoxSizer.Add(horizontalBoxSizer)
+		
+		panel.SetSizer(verticalBoxSizer)
+		
+		self.Centre()
+		self.Show()
+	
+	def OnAceptar(self, e):
+		self.termino = self.cuadroEdicion.GetValue()
+		self.Close()
+	
+	def OnCancelar(self, e):
+		self.Close()
+	
+	def getTermino(self):
+		return self.termino
