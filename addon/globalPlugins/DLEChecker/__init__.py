@@ -29,7 +29,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				info = None
 			
 			if not info or info.isCollapsed:
-				ui.message(_("Selecciona un texto primero."))
+				self.solicitarDefinicionABuscar()
 				return
 			else:
 				selectedText = info.text.lower()
@@ -37,11 +37,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			try:
 				selectedText = obj.selection.text.lower()
 			except (RuntimeError, NotImplementedError):
-				ui.message("Selecciona un texto primero.")
+				self.solicitarDefinicionABuscar()
 				return
 			
 			if obj.selection.text == "":
 				self.solicitarDefinicionABuscar()
+				return
+		
+		self.obtenerDefinicion(selectedText)
 	
 	def obtenerDefinicion(self, palabra):
 			argumentos = {"w": palabra.split(" ")[0]}
@@ -60,7 +63,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 					if hasattr(i, 'text'):
 						message = _(message + i.text + "\n")
 				
-#			ui.browseableMessage(message)
 				self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
 				gui.mainFrame.prePopup()
 				self.ventanaMSG.Show()
@@ -68,10 +70,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				ui.message(_("Error al intentar obtener la definición de la palabra."))
 	
 	def solicitarDefinicionABuscar(self):
-		nuevaBusqueda = NuevaBusqueda(None, "Nueva definición a buscar")
-		nuevaBusqueda.Show()
-		terminoABuscar = nuevaBusqueda.getTermino()
-		print(terminoABuscar)
+		NuevaConsulta(gui.mainFrame, "Nueva definición a buscar", "Introduce el término a consultar:", self)
 
 class DialogoMsg(wx.Dialog):
 # Function taken from the add-on emoticons to center the window
@@ -138,43 +137,48 @@ class DialogoMsg(wx.Dialog):
 		self.Destroy()
 		gui.mainFrame.postPopup()
 
-class NuevaBusqueda(wx.Frame):
-	def __init__(self, parent, titulo):
-		super(NuevaBusqueda, self).__init__(parent, -1, title=titulo)
+class NuevaConsulta(wx.Dialog):
+	def __init__(self, parent, titulo, mensaje, globalPlugin):
+		super(NuevaConsulta, self).__init__(parent, title=titulo, size=(800, 600))
 		
-		self.termino = ""
+		self.mensaje = mensaje
+		self.globalPlugin = globalPlugin
 		
+		self.iniciarUI()
+	
+	def iniciarUI(self):
 		panel = wx.Panel(self)
 		
 		verticalBoxSizer = wx.BoxSizer(wx.VERTICAL)
 		horizontalBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
 		
-		self.cuadroEdicion = wx.TextCtrl(panel, -1, "")
+		self.etiqueta = wx.StaticText(panel, -1, label=self.mensaje)
+		self.cuadroEdicion = wx.TextCtrl(panel, -1, "", style=wx.TE_PROCESS_ENTER)
+		self.btnAceptar = wx.Button(panel, -1, "Aceptar")
+		self.btnCancelar = wx.Button(panel, -1, "Cancelar")
 		
-		self.botonAceptar = wx.Button(panel, -1, "Aceptar")
-		self.Bind(wx.EVT_BUTTON, self.OnAceptar, self.botonAceptar)
+		self.Bind(wx.EVT_TEXT_ENTER, self.onAceptar, self.cuadroEdicion)
+		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
+		self.Bind(wx.EVT_BUTTON, self.onCancelar, self.btnCancelar)
 		
-		self.botonCancelar = wx.Button(panel, -1, "Cancelar")
-		self.Bind(wx.EVT_BUTTON, self.OnCancelar, self.botonCancelar)
+		verticalBoxSizer.Add(self.etiqueta)
+		verticalBoxSizer.Add(self.cuadroEdicion)
 		
-		verticalBoxSizer.Add(self.cuadroEdicion, 1, wx.EXPAND)
-		
-		horizontalBoxSizer.Add(self.botonAceptar, 0, wx.CENTER)
-		horizontalBoxSizer.Add(self.botonCancelar, 0, wx.CENTER)
+		horizontalBoxSizer.Add(self.btnAceptar, 0, wx.CENTRE)
+		horizontalBoxSizer.Add(self.btnCancelar, 0, wx.CENTRE)
 		
 		verticalBoxSizer.Add(horizontalBoxSizer)
 		
-		panel.SetSizer(verticalBoxSizer)
+		self.SetSizer(verticalBoxSizer)
 		
 		self.Centre()
 		self.Show()
 	
-	def OnAceptar(self, e):
-		self.termino = self.cuadroEdicion.GetValue()
+	def onAceptar(self, e):
+		terminoABuscar = self.cuadroEdicion.GetValue()
+		if terminoABuscar != "":
+			self.globalPlugin.obtenerDefinicion(terminoABuscar)
 		self.Close()
 	
-	def OnCancelar(self, e):
-		self.Close()
-	
-	def getTermino(self):
-		return self.termino
+	def onCancelar(self, e):
+		self.Destroy()
