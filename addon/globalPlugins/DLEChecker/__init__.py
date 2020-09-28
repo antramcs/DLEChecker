@@ -139,7 +139,7 @@ class DialogoMsg(wx.Dialog):
 
 class NuevaConsulta(wx.Dialog):
 	def __init__(self, parent, titulo, mensaje, globalPlugin):
-		super(NuevaConsulta, self).__init__(parent, title=titulo, size=(800, 600))
+		super(NuevaConsulta, self).__init__(parent, title=titulo, size=(400, 250))
 		
 		self.mensaje = mensaje
 		self.globalPlugin = globalPlugin
@@ -161,8 +161,8 @@ class NuevaConsulta(wx.Dialog):
 		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
 		self.Bind(wx.EVT_BUTTON, self.onCancelar, self.btnCancelar)
 		
-		verticalBoxSizer.Add(self.etiqueta)
-		verticalBoxSizer.Add(self.cuadroEdicion)
+		verticalBoxSizer.Add(self.etiqueta, wx.EXPAND)
+		verticalBoxSizer.Add(self.cuadroEdicion, wx.EXPAND)
 		
 		horizontalBoxSizer.Add(self.btnAceptar, 0, wx.CENTRE)
 		horizontalBoxSizer.Add(self.btnCancelar, 0, wx.CENTRE)
@@ -178,7 +178,10 @@ class NuevaConsulta(wx.Dialog):
 		terminoABuscar = self.cuadroEdicion.GetValue()
 		if terminoABuscar != "":
 			self.globalPlugin.obtenerDefinicion(terminoABuscar)
-		self.Close()
+			self.Close()
+		else:
+			ui.message("Debes introducir un término a consultar.")
+			self.cuadroEdicion.SetFocus()
 	
 	def onCancelar(self, e):
 		self.Destroy()
