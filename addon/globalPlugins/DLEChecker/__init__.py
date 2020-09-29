@@ -49,8 +49,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.obtenerDefinicion(selectedText)
 	
 	def obtenerDefinicion(self, palabra):
-		argumentos = palabra.split(" ")[0]
-		argumentos = {"w": self.limpiarTexto(argumentos)}
+		argumentos = self.limpiarTexto(palabra)
+		argumentos = {"w": argumentos.split(" ")[0]}
 		argumentos_codificados = parse.urlencode(argumentos)
 		url = "https://dle.rae.es/?" + argumentos_codificados
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
@@ -77,6 +77,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	
 	def limpiarTexto(self, texto):
 		cadenaResultante = ""
+		
+		if texto[0] == ' ':
+			texto = texto[1:]
 		
 		for caracter in texto:
 			if ( caracter in string.punctuation ) or ( caracter in string.digits ):
