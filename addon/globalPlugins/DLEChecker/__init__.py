@@ -16,6 +16,8 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bs4 import BeautifulSoup
 
+import string
+
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	@script(gesture="kb:NVDA+shift+c", description= _("Busca la definición de la palabra seleccionada en el Diccionario de la Lengua Española"), category= _("DLEChecker"))
 	def script_check_dle_term(self, gesture):
@@ -47,30 +49,42 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.obtenerDefinicion(selectedText)
 	
 	def obtenerDefinicion(self, palabra):
-			argumentos = {"w": palabra.split(" ")[0]}
-			argumentos_codificados = parse.urlencode(argumentos)
-			url = "https://dle.rae.es/?" + argumentos_codificados
-			req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+		argumentos = palabra.split(" ")[0]
+		argumentos = {"w": self.limpiarTexto(argumentos)}
+		argumentos_codificados = parse.urlencode(argumentos)
+		url = "https://dle.rae.es/?" + argumentos_codificados
+		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+		
+		try:
+			html = request.urlopen(req)
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			parrafos = list(bs.section.article)
+			message = ""
 			
-			try:
-				html = request.urlopen(req)
-				datos = html.read().decode('utf-8')
-				bs = BeautifulSoup(datos, 'html.parser')
-				parrafos = list(bs.section.article)
-				message = ""
-				
-				for i in parrafos:
-					if hasattr(i, 'text'):
-						message = _(message + i.text + "\n")
-				
-				self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
-				gui.mainFrame.prePopup()
-				self.ventanaMSG.Show()
-			except:
-				ui.message(_("Error al intentar obtener la definición de la palabra."))
+			for i in parrafos:
+				if hasattr(i, 'text'):
+					message = _(message + i.text + "\n")
+			
+			self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
+			gui.mainFrame.prePopup()
+			self.ventanaMSG.Show()
+		except:
+			ui.message(_("Error al intentar obtener la definición de la palabra."))
 	
 	def solicitarDefinicionABuscar(self):
 		NuevaConsulta(gui.mainFrame, "Nueva definición a buscar", "Introduce el término a consultar:", self)
+	
+	def limpiarTexto(self, texto):
+		cadenaResultante = ""
+		
+		for caracter in texto:
+			if ( caracter in string.punctuation ) or ( caracter in string.digits ):
+				continue
+			
+			cadenaResultante += caracter
+		
+		return cadenaResultante
 
 class DialogoMsg(wx.Dialog):
 # Function taken from the add-on emoticons to center the window
