@@ -79,8 +79,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		cadenaResultante = ""
 		
 		for caracter in texto:
-			if ( caracter in string.ascii_lowercase() + 'áéíóúñ' ):
-			cadenaResultante += caracter
+			if ( caracter in string.ascii_lowercase + 'áéíóúñ' ):
+				cadenaResultante += caracter
 		
 		return cadenaResultante
 
