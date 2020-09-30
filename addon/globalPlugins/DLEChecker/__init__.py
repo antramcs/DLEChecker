@@ -64,7 +64,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			
 			for i in parrafos:
 				if hasattr(i, 'text'):
-					message = _(message + i.text + "\n")
+					message = message + i.text + "\n"
 			
 			self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
 			gui.mainFrame.prePopup()
@@ -73,18 +73,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message(_("Error al intentar obtener la definición de la palabra."))
 	
 	def solicitarDefinicionABuscar(self):
-		NuevaConsulta(gui.mainFrame, "Nueva definición a buscar", "Introduce el término a consultar:", self)
+		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"), self)
 	
 	def limpiarTexto(self, texto):
 		cadenaResultante = ""
 		
-		if texto[0] == ' ':
-			texto = texto[1:]
-		
 		for caracter in texto:
-			if ( caracter in string.punctuation ) or ( caracter in string.digits ):
-				continue
-			
+			if ( caracter in string.ascii_lowercase() + 'áéíóúñ' ):
 			cadenaResultante += caracter
 		
 		return cadenaResultante
@@ -117,15 +112,15 @@ class DialogoMsg(wx.Dialog):
 		verticalBox = wx.BoxSizer(wx.VERTICAL)
 		horizontalBox = wx.BoxSizer(wx.HORIZONTAL)
 
-		etiqueta = wx.StaticText(panel_dialogo, wx.ID_ANY, label="Resultado:")
+		etiqueta = wx.StaticText(panel_dialogo, wx.ID_ANY, label=_("Resultado:"))
 		textoResultado = wx.TextCtrl(panel_dialogo, wx.ID_ANY, style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL) 
 
 		verticalBox.Add(etiqueta, 0, wx.EXPAND)
 		verticalBox.Add(textoResultado, 1, wx.EXPAND | wx.ALL)
 
-		self.leerBTN = wx.Button(panel_dialogo, wx.ID_ANY, "Leer resultado")
-		self.copiarBTN = wx.Button(panel_dialogo, wx.ID_ANY, "Copiar al portapapeles")
-		self.salirBTN = wx.Button(panel_dialogo, wx.ID_CANCEL, "&Salir")
+		self.leerBTN = wx.Button(panel_dialogo, wx.ID_ANY, _("Leer resultado"))
+		self.copiarBTN = wx.Button(panel_dialogo, wx.ID_ANY, _("Copiar al portapapeles"))
+		self.salirBTN = wx.Button(panel_dialogo, wx.ID_CANCEL, _("&Salir"))
 
 		horizontalBox.Add(self.leerBTN, 0, wx.CENTER)
 		horizontalBox.Add(self.copiarBTN, 0, wx.CENTER)
@@ -148,7 +143,7 @@ class DialogoMsg(wx.Dialog):
 
 	def onCopiar(self, event):
 		api.copyToClip(self.mensaje)
-		ui.message("Copiado al portapapeles")
+		ui.message(_("Copiado al portapapeles"))
 
 	def onSalir(self, event):
 		self.Destroy()
@@ -171,8 +166,8 @@ class NuevaConsulta(wx.Dialog):
 		
 		self.etiqueta = wx.StaticText(panel, -1, label=self.mensaje)
 		self.cuadroEdicion = wx.TextCtrl(panel, -1, "", style=wx.TE_PROCESS_ENTER)
-		self.btnAceptar = wx.Button(panel, -1, "Aceptar")
-		self.btnCancelar = wx.Button(panel, -1, "Cancelar")
+		self.btnAceptar = wx.Button(panel, -1, _("Aceptar"))
+		self.btnCancelar = wx.Button(panel, -1, _("Cancelar"))
 		
 		self.Bind(wx.EVT_TEXT_ENTER, self.onAceptar, self.cuadroEdicion)
 		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
@@ -197,7 +192,7 @@ class NuevaConsulta(wx.Dialog):
 			self.globalPlugin.obtenerDefinicion(terminoABuscar)
 			self.Close()
 		else:
-			ui.message("Debes introducir un término a consultar.")
+			ui.message(_("Debes introducir un término a consultar."))
 			self.cuadroEdicion.SetFocus()
 	
 	def onCancelar(self, e):
