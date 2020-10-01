@@ -70,7 +70,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			gui.mainFrame.prePopup()
 			self.ventanaMSG.Show()
 		except:
-			ui.message(_("Error al intentar obtener la definición de la palabra."))
+			gui.messageBox(_("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."), caption="¡Alerta!", parent=None)
 	
 	def solicitarDefinicionABuscar(self):
 		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"), self)
