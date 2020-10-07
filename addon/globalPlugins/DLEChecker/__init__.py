@@ -49,28 +49,62 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.obtenerDefinicion(selectedText)
 	
 	def obtenerDefinicion(self, palabra):
-		argumentos = self.limpiarTexto(palabra)
-		argumentos = {"w": argumentos.split(" ")[0]}
+		palabra = self.limpiarTexto(palabra)
+		argumentos = {"w": palabra}
 		argumentos_codificados = parse.urlencode(argumentos)
 		url = "https://dle.rae.es/?" + argumentos_codificados
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
 		
 		try:
 			html = request.urlopen(req)
+		except:
+			gui.messageBox(_("Error al intentar obtener la definición. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde."), caption=_("¡Alerta!"), parent=None, style=wx.ICON_ERROR)
+			return
+		
+		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
-			parrafos = list(bs.section.article)
+			parrafos = bs.section.article
 			message = ""
 			
-			for i in parrafos:
-				if hasattr(i, 'text'):
-					message = message + i.text + "\n"
+			for parrafo in parrafos:
+				if hasattr(parrafo, 'text'):
+					message = message + parrafo.text + "\n"
 			
-			self.ventanaMSG = DialogoMsg(gui.mainFrame, "DLEChecker", message)
+			message = self.obtenerSinonimosYAntonimos(palabra, message)
+			
+			self.ventanaMSG = DialogoMsg(gui.mainFrame, _("DLEChecker"), message)
 			gui.mainFrame.prePopup()
 			self.ventanaMSG.Show()
 		except:
-			gui.messageBox(_("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."), caption="¡Alerta!", parent=None)
+			gui.messageBox(_("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."), caption=_("¡Alerta!"), parent=None, style=wx.ICON_ERROR)
+			return
+	
+	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
+		url = "https://wordreference.com/sinonimos/" + palabra
+		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+		
+		try:
+			html = request.urlopen(req)
+		except:
+			mensaje += "* No ha sido posible obtener los sinónimos y antónimos. La web puede estar sufriendo problemas técnicos. Inténtalo más tarde."
+		
+		try:
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			
+			div = bs.find('div', class_="trans clickable")
+			lista_sinonimos = div.ul
+			
+			mensaje += "\nSinónimos:\n"
+			
+			for sinonimo in lista_sinonimos:
+				if sinonimo.name:
+					mensaje += "\n" + sinonimo.text
+		except:
+			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra."
+		
+		return mensaje
 	
 	def solicitarDefinicionABuscar(self):
 		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"), self)
@@ -166,8 +200,8 @@ class NuevaConsulta(wx.Dialog):
 		
 		self.etiqueta = wx.StaticText(panel, -1, label=self.mensaje)
 		self.cuadroEdicion = wx.TextCtrl(panel, -1, "", style=wx.TE_PROCESS_ENTER)
-		self.btnAceptar = wx.Button(panel, -1, _("Aceptar"))
-		self.btnCancelar = wx.Button(panel, -1, _("Cancelar"))
+		self.btnAceptar = wx.Button(panel, wx.ID_OK, _("Consultar"))
+		self.btnCancelar = wx.Button(panel, wx.ID_CANCEL, _("Cancelar"))
 		
 		self.Bind(wx.EVT_TEXT_ENTER, self.onAceptar, self.cuadroEdicion)
 		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
@@ -189,8 +223,8 @@ class NuevaConsulta(wx.Dialog):
 	def onAceptar(self, e):
 		terminoABuscar = self.cuadroEdicion.GetValue()
 		if terminoABuscar != "":
-			self.globalPlugin.obtenerDefinicion(terminoABuscar)
 			self.Close()
+			self.globalPlugin.obtenerDefinicion(terminoABuscar)
 		else:
 			ui.message(_("Debes introducir un término a consultar."))
 			self.cuadroEdicion.SetFocus()
