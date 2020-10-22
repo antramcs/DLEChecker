@@ -85,8 +85,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 	
 	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
-		url = "https://wordreference.com/sinonimos/" + palabra
-		print(url)
+		url = "https://wordreference.com/sinonimos/" + request.quote(palabra)
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
 		
 		try:
