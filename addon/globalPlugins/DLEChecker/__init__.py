@@ -49,6 +49,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.obtenerDefinicion(selectedText)
 	
 	def obtenerDefinicion(self, palabra):
+		
+		def mostrarDialogoError(mensaje):
+			gui.messageBox(_(mensaje), caption=_("¡Error!"), parent=None, style=wx.ICON_ERROR)
+		
 		palabra = self.limpiarTexto(palabra)
 		argumentos = {"w": palabra}
 		argumentos_codificados = parse.urlencode(argumentos)
@@ -58,7 +62,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		try:
 			html = request.urlopen(req)
 		except:
-			gui.messageBox(_("Error al intentar obtener la definición. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde."), caption=_("¡Alerta!"), parent=None, style=wx.ICON_ERROR)
+			wx.CallAfter(mostrarDialogoError, "Error. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde.")
 			return
 		
 		try:
@@ -77,19 +81,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			gui.mainFrame.prePopup()
 			self.ventanaMSG.Show()
 		except:
-			gui.messageBox(_("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."), caption=_("¡Alerta!"), parent=None, style=wx.ICON_ERROR)
+			wx.CallAfter(mostrarDialogoError, "Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe.")
 			return
 	
 	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
 		url = "https://wordreference.com/sinonimos/" + palabra
+		print(url)
 		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
 		
 		try:
 			html = request.urlopen(req)
-		except:
-			mensaje += "* No ha sido posible obtener los sinónimos y antónimos. La web puede estar sufriendo problemas técnicos. Inténtalo más tarde."
-		
-		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
 			
@@ -102,7 +103,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				if sinonimo.name:
 					mensaje += "\n" + sinonimo.text
 		except:
-			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra."
+			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
 		return mensaje
 	
