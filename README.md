@@ -8,17 +8,37 @@ El complemento DLEChecker para NVDA permite a los usuarios consultar de forma r�
 
 Este es  el máximo órgano consultivo en cuanto a la ortografía y la gramática de la misma, el cual se encarga de garantizar una norma común, así como de velar que los cambios que esta experimente no quiebren la esencial unidad que mantiene en todo el ámbito hispánico.
 
+Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado.
+
 ### Modo de uso.
 
-El modo de uso es muy sencillo. Tan solo habrá que seleccionar cualquier palabra que deseemos consultar (utilizando shift+teclas habituales de navegación por texto), y pulsar la combinación de teclas NVDA + Shift + C. Esta combinación de teclas puede ser personalizada a través del cuadro de diálogo «Gestos de Entrada» de la opción «Preferencias» de NVDA dentro de la categoría DLEChecker.
-El resultado de la búsqueda se mostrará dentro de un cuadro de edición de sólo lectura en un diálogo. Se pueden utilizar las flechas para navegar por el contenido, o bien hacer que NVDA lo lea automáticamente y lo copie al portapapeles empleando los botones dispuestos a tal efecto en el diálogo.
+Este complemento dispone de dos modos de utilización, explicados a continuación:
+
+a) El modo tradicional hasta el momento en DLEChecker. Es decir, seleccionando cualquier palabra (utilizando shift+teclas habituales de navegación por texto), y pulsando la combinación de teclas NVDA + Shift + C.
+
+b) Pulsando directamente la combinación de teclas NVDA + Shift + C en cualquier aplicación.
+
+En el primer caso, DLEChecker mostrará la definición del término buscado así como los sinónimos y/o antónimos disponibles en la ventana de resultados existente en la versión 1.1.
+
+En el segundo caso, DLEChecker mostrará un cuadro de diálogo donde introducir el término a buscar. Una vez introducido y presionado el botón "Consultar", el complemento mostrará la ventana de resultados habitual.
+
+Se pueden utilizar las flechas para navegar por el contenido de la ventana de resultados, o bien hacer que NVDA lo lea automáticamente y lo copie al portapapeles empleando los botones dispuestos a tal efecto en el diálogo.
+
 Si se seleccionan accidentalmente varias palabras y se ejecuta la búsqueda, el complemento sólo tendrá en cuenta la primera.
+
+La combinación de teclas NVDA + Shift + C puede ser personalizada a través del cuadro de diálogo «Gestos de Entrada» de la opción «Preferencias» de NVDA dentro de la categoría DLEChecker.
 
 ### Atajos.
 
-El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de realizar la consulta a la web del Diccionario de la Lengua Española.
+El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de mostrar el cuadro de diálogo de entrada para introducir el término a buscar, así como de realizar la consulta a la web del Diccionario de la Lengua Española de la RAE.
 
 ## Registro de cambios.
+
+### Versión 1.2.
+
+* Añadida una nueva característica que permite obtener los sinónimos y antónimos del término buscado a la vez que la definición. Agradecer a Jose Manuel Delicado por su ayuda implementando esta función.
+* Modificada la interfaz visual ligeramente para una mejor visualización y coherencia con el complemento. Agradecer a Héctor Benítez por sus sugerencias en este sentido.
+* Corrección de errores y mejoras de estabilidad.
 
 ### Versión 1.1.
 
