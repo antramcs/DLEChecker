@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+﻿# -*- coding: UTF-8 -*-
 
 # Build customizations
 # Change this file instead of sconstruct or manifest files, whenever possible.
@@ -19,7 +19,7 @@ addon_info = {
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": _("""Este complemento busca la definición de la palabra seleccionada en el diccionario de la Real Academia Española."""),
 	# version
-	"addon_version": "1.2",
+	"addon_version": "1.2.1",
 	# Author(s)
 	"addon_author": "Antonio Cascales <antonio.cascales@gmail.com>",
 	# URL for the add-on documentation support

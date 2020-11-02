@@ -1,4 +1,4 @@
-# DLEChecker
+﻿# DLEChecker
 
 ## Buscador de definiciones en el Diccionario de la Lengua Española.
 
@@ -33,6 +33,10 @@ La combinación de teclas NVDA + Shift + C puede ser personalizada a través del
 El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de mostrar el cuadro de diálogo de entrada para introducir el término a buscar, así como de realizar la consulta a la web del Diccionario de la Lengua Española de la RAE.
 
 ## Registro de cambios.
+
+### Versión 1.2.1.
+
+* Corregido un error que hacía que con conexiones lentas NVDA quedase bloqueado mientras realizaba la consulta, impidiendo el normal funcionamiento del mismo.
 
 ### Versión 1.2.
 

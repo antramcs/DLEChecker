@@ -1,4 +1,4 @@
-#DLEChecker for NVDA.
+﻿#DLEChecker for NVDA.
 #This file is covered by the GNU General Public License.
 #See the file COPYING.txt for more details.
 #Copyright (C) 2020 Antonio Cascales <antonio.cascales@gmail.com> and Jose Manuel Delicado <jm.delicado@nvda.es>
@@ -12,6 +12,7 @@ import api
 import textInfos
 from scriptHandler import script
 from urllib import request, parse
+from threading import Thread
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bs4 import BeautifulSoup
@@ -46,78 +47,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.solicitarDefinicionABuscar()
 				return
 		
-		self.obtenerDefinicion(selectedText)
-	
-	def obtenerDefinicion(self, palabra):
-		
-		def mostrarDialogoError(mensaje):
-			gui.messageBox(_(mensaje), caption=_("¡Error!"), parent=None, style=wx.ICON_ERROR)
-		
-		palabra = self.limpiarTexto(palabra)
-		argumentos = {"w": palabra}
-		argumentos_codificados = parse.urlencode(argumentos)
-		url = "https://dle.rae.es/?" + argumentos_codificados
-		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		
-		try:
-			html = request.urlopen(req)
-		except:
-			wx.CallAfter(mostrarDialogoError, "Error. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde.")
-			return
-		
-		try:
-			datos = html.read().decode('utf-8')
-			bs = BeautifulSoup(datos, 'html.parser')
-			parrafos = bs.section.article
-			message = ""
-			
-			for parrafo in parrafos:
-				if hasattr(parrafo, 'text'):
-					message = message + parrafo.text + "\n"
-			
-			message = self.obtenerSinonimosYAntonimos(palabra, message)
-			
-			self.ventanaMSG = DialogoMsg(gui.mainFrame, _("DLEChecker"), message)
-			gui.mainFrame.prePopup()
-			self.ventanaMSG.Show()
-		except:
-			wx.CallAfter(mostrarDialogoError, "Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe.")
-			return
-	
-	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
-		url = "https://wordreference.com/sinonimos/" + request.quote(palabra)
-		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		
-		try:
-			html = request.urlopen(req)
-			datos = html.read().decode('utf-8')
-			bs = BeautifulSoup(datos, 'html.parser')
-			
-			div = bs.find('div', class_="trans clickable")
-			lista_sinonimos = div.ul
-			
-			mensaje += "\nSinónimos:\n"
-			
-			for sinonimo in lista_sinonimos:
-				if sinonimo.name:
-					mensaje += "\n" + sinonimo.text
-		except:
-			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
-		
-		return mensaje
+		hilo = Hilo(selectedText)
+		hilo.start()
 	
 	def solicitarDefinicionABuscar(self):
-		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"), self)
+		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"))
 	
-	def limpiarTexto(self, texto):
-		cadenaResultante = ""
-		
-		for caracter in texto:
-			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúñ' ):
-				cadenaResultante += caracter
-		
-		return cadenaResultante
-
 class DialogoMsg(wx.Dialog):
 # Function taken from the add-on emoticons to center the window
 	def _calculatePosition(self, width, height):
@@ -184,11 +119,10 @@ class DialogoMsg(wx.Dialog):
 		gui.mainFrame.postPopup()
 
 class NuevaConsulta(wx.Dialog):
-	def __init__(self, parent, titulo, mensaje, globalPlugin):
+	def __init__(self, parent, titulo, mensaje):
 		super(NuevaConsulta, self).__init__(parent, title=titulo, size=(400, 250))
 		
 		self.mensaje = mensaje
-		self.globalPlugin = globalPlugin
 		
 		self.iniciarUI()
 	
@@ -224,10 +158,88 @@ class NuevaConsulta(wx.Dialog):
 		terminoABuscar = self.cuadroEdicion.GetValue()
 		if terminoABuscar != "":
 			self.Close()
-			self.globalPlugin.obtenerDefinicion(terminoABuscar)
+			hilo = Hilo(terminoABuscar)
+			hilo.start()
 		else:
 			ui.message(_("Debes introducir un término a consultar."))
 			self.cuadroEdicion.SetFocus()
 	
 	def onCancelar(self, e):
 		self.Destroy()
+
+class Hilo(Thread):
+	
+	def __init__(self, palabra):
+		super(Hilo, self).__init__()
+		self.daemon = True
+		self.palabra = palabra
+	
+	def run(self):
+		
+		def mostrarDialogoError(mensaje):
+			gui.messageBox(mensaje, caption=_("¡Error!"), parent=None, style=wx.ICON_ERROR)
+		
+		def mostrarDialogoResultado(mensaje):
+			ventanaMSG = DialogoMsg(gui.mainFrame, _("DLEChecker"), mensaje)
+			gui.mainFrame.prePopup()
+			ventanaMSG.Show()
+		
+		palabra = self.limpiarTexto(self.palabra)
+		argumentos = {"w": palabra}
+		argumentos_codificados = parse.urlencode(argumentos)
+		url = "https://dle.rae.es/?" + argumentos_codificados
+		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+		
+		try:
+			html = request.urlopen(req)
+		except:
+			wx.CallAfter(mostrarDialogoError, _("Error. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde."))
+			return
+		
+		try:
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			parrafos = bs.section.article
+			message = ""
+			
+			for parrafo in parrafos:
+				if hasattr(parrafo, 'text'):
+					message = message + parrafo.text + "\n"
+			
+			message = self.obtenerSinonimosYAntonimos(palabra, message)
+			
+			wx.CallAfter(mostrarDialogoResultado, message)
+		except:
+			wx.CallAfter(mostrarDialogoError, "Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe.")
+			return
+	
+	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
+		url = "https://wordreference.com/sinonimos/" + request.quote(palabra)
+		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
+		
+		try:
+			html = request.urlopen(req)
+			datos = html.read().decode('utf-8')
+			bs = BeautifulSoup(datos, 'html.parser')
+			
+			div = bs.find('div', class_="trans clickable")
+			lista_sinonimos = div.ul
+			
+			mensaje += "\nSinónimos:\n"
+			
+			for sinonimo in lista_sinonimos:
+				if sinonimo.name:
+					mensaje += "\n" + sinonimo.text
+		except:
+			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
+		
+		return mensaje
+	
+	def limpiarTexto(self, texto):
+		cadenaResultante = ""
+		
+		for caracter in texto:
+			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúñ' ):
+				cadenaResultante += caracter
+		
+		return cadenaResultante
