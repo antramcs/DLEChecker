@@ -15,6 +15,12 @@ from urllib import request, parse
 from threading import Thread
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+try:
+	del sys.modules['html']
+except:
+	pass
+
 from bs4 import BeautifulSoup
 
 import string

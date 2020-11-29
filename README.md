@@ -34,6 +34,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.2.2.
+
+* Solucionado un error que impedía el correcto funcionamiento de DLEChecker cuando existían complementos instalados que importaban el módulo "html", interfiriendo con el importado por él.
+
 ### Versión 1.2.1.
 
 * Corregido un error que hacía que con conexiones lentas NVDA quedase bloqueado mientras realizaba la consulta, impidiendo el normal funcionamiento del mismo.
