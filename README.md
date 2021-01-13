@@ -34,6 +34,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.2.3.
+
+* Solucionado un error que impedía buscar las definiciones de términos que incluyesen el carácter 'ü' entre sus letras.
+
 ### Versión 1.2.2.
 
 * Solucionado un error que impedía el correcto funcionamiento de DLEChecker cuando existían complementos instalados que importaban el módulo "html", interfiriendo con el importado por él.
