@@ -205,12 +205,13 @@ class Hilo(Thread):
 		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
-			parrafos = bs.section.article
 			message = ""
 			
-			for parrafo in parrafos:
-				if hasattr(parrafo, 'text'):
-					message = message + parrafo.text + "\n"
+			articulos = bs.find_all('article')
+			
+			for articulo in articulos:
+				message += articulo.header.get('title')
+				message += articulo.get_text() + "\n"
 			
 			message = self.obtenerSinonimosYAntonimos(palabra, message)
 			
@@ -231,11 +232,11 @@ class Hilo(Thread):
 			div = bs.find('div', class_="trans clickable")
 			lista_sinonimos = div.ul
 			
-			mensaje += "\nSinónimos:\n"
+			mensaje += "Sinónimos: "
 			
 			for sinonimo in lista_sinonimos:
 				if sinonimo.name:
-					mensaje += "\n" + sinonimo.text
+					mensaje += "\n" + sinonimo.get_text()
 		except:
 			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
