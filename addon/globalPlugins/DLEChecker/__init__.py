@@ -1,7 +1,7 @@
 ﻿#DLEChecker for NVDA.
 #This file is covered by the GNU General Public License.
 #See the file COPYING.txt for more details.
-#Copyright (C) 2020 Antonio Cascales <antonio.cascales@gmail.com> and Jose Manuel Delicado <jm.delicado@nvda.es>
+#Copyright (C) 2021 Antonio Cascales <antonio.cascales@gmail.com> and Jose Manuel Delicado <jm.delicado@nvda.es>
 
 import wx
 import gui
@@ -167,7 +167,7 @@ class NuevaConsulta(wx.Dialog):
 			hilo = Hilo(terminoABuscar)
 			hilo.start()
 		else:
-			ui.message(_("Debes introducir un término a consultar."))
+			gui.messageBox(_("Debes introducir un término a consultar."))
 			self.cuadroEdicion.SetFocus()
 	
 	def onCancelar(self, e):
@@ -207,11 +207,18 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			message = ""
 			
-			articulos = bs.find_all('article')
+#			articulos = bs.find_all('article')
 			
-			for articulo in articulos:
-				message += articulo.header.get('title')
-				message += articulo.get_text() + "\n"
+			message += "Definiciones de la palabra " + palabra + ":"
+			
+#			for articulo in articulos:
+#				message += articulo.get_text()
+			
+			div = bs.find('div', id='resultados')
+			message += div.get_text()
+			
+			while message[-1] == '\n':
+				message = message.rstrip()
 			
 			message = self.obtenerSinonimosYAntonimos(palabra, message)
 			
@@ -230,13 +237,11 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			
 			div = bs.find('div', class_="trans clickable")
-			lista_sinonimos = div.ul
+			lista_sinonimos = div.ul.li.get_text()
+			lista_antonimos = div.ul.ul.get_text()
 			
-			mensaje += "Sinónimos: "
-			
-			for sinonimo in lista_sinonimos:
-				if sinonimo.name:
-					mensaje += "\n" + sinonimo.get_text()
+			mensaje += "\n\nSinónimos: " + lista_sinonimos + ".\n"
+			mensaje += lista_antonimos + "."
 		except:
 			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
