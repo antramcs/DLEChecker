@@ -205,22 +205,21 @@ class Hilo(Thread):
 		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
-			message = ""
+			message = "Definiciones de la palabra " + palabra + "\n"
 			
-#			articulos = bs.find_all('article')
+			articulos = bs.find_all('article')
 			
-			message += "Definiciones de la palabra " + palabra + ":"
-			
-#			for articulo in articulos:
-#				message += articulo.get_text()
-			
-			div = bs.find('div', id='resultados')
-			message += div.get_text()
-			
-			while message[-1] == '\n':
-				message = message.rstrip()
-			
-			message = self.obtenerSinonimosYAntonimos(palabra, message)
+			if len(articulos) > 0:
+				for articulo in articulos:
+					message += articulo.get_text()
+				
+				while message[-1] == '\n':
+					message = message.rstrip()
+				
+				message = self.obtenerSinonimosYAntonimos(palabra, message)
+			else:
+				gui.messageBox("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía.")
+				return
 			
 			wx.CallAfter(mostrarDialogoResultado, message)
 		except:
@@ -243,7 +242,7 @@ class Hilo(Thread):
 			mensaje += "\n\nSinónimos: " + lista_sinonimos + ".\n"
 			mensaje += lista_antonimos + "."
 		except:
-			mensaje += "\n* No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
+			mensaje += "\n´😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
 		return mensaje
 	
