@@ -236,11 +236,18 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			
 			div = bs.find('div', class_="trans clickable")
+			lista_sinonimos = []
+			lista_antonimos = []
+			
 			lista_sinonimos = div.ul.li.get_text()
-			lista_antonimos = div.ul.ul.get_text()
+			
+			if div.ul.ul:
+				lista_antonimos = div.ul.ul.get_text()
 			
 			mensaje += "\n\nSinónimos: " + lista_sinonimos + ".\n"
-			mensaje += lista_antonimos + "."
+			
+#			if lista_antonimos:
+#				mensaje += lista_antonimos + "."
 		except:
 			mensaje += "\n´😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
