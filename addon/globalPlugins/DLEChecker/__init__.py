@@ -205,13 +205,15 @@ class Hilo(Thread):
 		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
-			message = "Definiciones de la palabra " + palabra + "\n"
+			message = "Definiciones de la palabra " + palabra + "\n\n"
 			
 			articulos = bs.find_all('article')
 			
 			if len(articulos) > 0:
 				for articulo in articulos:
-					message += articulo.get_text()
+					for parrafo in articulo.find_all('p'):
+						message += parrafo.get_text() + "\n"
+					message += "\n"
 				
 				while message[-1] == '\n':
 					message = message.rstrip()
@@ -236,18 +238,16 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			
 			div = bs.find('div', class_="trans clickable")
-			lista_sinonimos = []
-			lista_antonimos = []
+			lista_sinonimos = div.ul
 			
-			lista_sinonimos = div.ul.li.get_text()
+			mensaje += "\n\nSinónimos: "
 			
-			if div.ul.ul:
-				lista_antonimos = div.ul.ul.get_text()
+			for sinonimo in lista_sinonimos:
+				if sinonimo.get_text() == "":
+					continue
+				
+				mensaje += sinonimo.get_text() + "\n"
 			
-			mensaje += "\n\nSinónimos: " + lista_sinonimos + ".\n"
-			
-#			if lista_antonimos:
-#				mensaje += lista_antonimos + "."
 		except:
 			mensaje += "\n´😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
