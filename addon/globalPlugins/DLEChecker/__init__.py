@@ -211,6 +211,9 @@ class Hilo(Thread):
 			
 			if len(articulos) > 0:
 				for articulo in articulos:
+					if articulo.find('table', class_='cnj'):
+						continue
+					
 					message += articulo.header.get_text() + "\n"
 					
 					for parrafo in articulo.find_all('p'):
