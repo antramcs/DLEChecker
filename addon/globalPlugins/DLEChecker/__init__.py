@@ -205,7 +205,7 @@ class Hilo(Thread):
 		try:
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
-			message = "Definiciones de la palabra " + palabra + "\n\n"
+			message = _("Definiciones de la palabra {palabra}").format(palabra=palabra) + "\n\n"
 			
 			articulos = bs.find_all('article')
 			
@@ -230,7 +230,7 @@ class Hilo(Thread):
 			
 			wx.CallAfter(mostrarDialogoResultado, message)
 		except:
-			wx.CallAfter(mostrarDialogoError, "Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe.")
+			wx.CallAfter(mostrarDialogoError, _("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."))
 			return
 	
 	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
@@ -254,7 +254,7 @@ class Hilo(Thread):
 				mensaje += sinonimo.get_text() + "\n"
 			
 		except:
-			mensaje += "\n´😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
+			mensaje += "\n😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
 		
 		return mensaje
 	
