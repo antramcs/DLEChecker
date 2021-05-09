@@ -34,6 +34,12 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.3.
+
+* Modificada la función principal del complemento para que muestre todas las definiciones del término buscado, aunque éste tenga varias acepciones. Gracias a Peter Reina, Georgiana Frincu y Marta Estrada por reportar el error.
+* Corregido un error que hacía que al intentar recuperar los sinónimos y antónimos de un término buscado, lanzase una excepción, indicando que no habían pese a que sí existían. Gracias a Marta Estrada por reportarlo.
+* Modificada la visualización del resultado para que estéticamente quede mejor formateado.
+
 ### Versión 1.2.3.
 
 * Solucionado un error que impedía buscar las definiciones de términos que incluyesen el carácter 'ü' entre sus letras.
