@@ -34,6 +34,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.3.1.
+
+* Actualizada la compatibilidad de DLEChecker con NVDA 2021.1.
+
 ### Versión 1.3.
 
 * Modificada la función principal del complemento para que muestre todas las definiciones del término buscado, aunque éste tenga varias acepciones. Gracias a Peter Reina, Georgiana Frincu y Marta Estrada por reportar el error.
