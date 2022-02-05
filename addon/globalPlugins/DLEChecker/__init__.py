@@ -262,7 +262,7 @@ class Hilo(Thread):
 		cadenaResultante = ""
 		
 		for caracter in texto:
-			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúüñ' ):
+			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúüñ ' ):
 				cadenaResultante += caracter
 		
 		return cadenaResultante
