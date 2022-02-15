@@ -34,10 +34,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
-### Versión  1.3.1.
+### Versión  1.3.2.
 
 * Modificado un error en el path de NVDA. Quitada la referencia de la ruta del complemento del mismo, a fin de evitar posibles problemas en el futuro.
-
+* Modificado un error que impedía que se mostrasen las definiciones cuando el término era  una locución. Gracias a Sukil Echenique por su contribución.
 
 ### Versión 1.3.1.
 
