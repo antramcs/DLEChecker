@@ -169,7 +169,7 @@ class NuevaConsulta(wx.Dialog):
 			hilo = Hilo(terminoABuscar)
 			hilo.start()
 		else:
-			gui.messageBox(_("Debes introducir un término a consultar."))
+			gui.messageBox(_("Debes introducir un término a consultar."), caption = _("¡Error!"), style = wx.ICON_ERROR)
 			self.cuadroEdicion.SetFocus()
 	
 	def onCancelar(self, e):
@@ -227,7 +227,7 @@ class Hilo(Thread):
 				
 				message = self.obtenerSinonimosYAntonimos(palabra, message)
 			else:
-				gui.messageBox("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía.")
+				gui.messageBox(_("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía."), caption = _("¡Error!"), style = wx.ICON_ERROR)
 				return
 			
 			wx.CallAfter(mostrarDialogoResultado, message)
@@ -264,7 +264,7 @@ class Hilo(Thread):
 		cadenaResultante = ""
 		
 		for caracter in texto:
-			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúüñ' ):
+			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúüñ ' ):
 				cadenaResultante += caracter
 		
 		return cadenaResultante
