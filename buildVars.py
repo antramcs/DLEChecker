@@ -14,12 +14,12 @@ addon_info = {
 	"addon_name": "DLEChecker",
 	# Add-on summary, usually the user visible name of the addon.
 	# Translators: Summary for this add-on to be shown on installation and add-on information.
-	"addon_summary": _("Buscador de definiciones de la RAE"),
+	"addon_summary": "DLEChecker",
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": _("""Este complemento busca la definición de la palabra seleccionada en el diccionario de la Real Academia Española."""),
 	# version
-	"addon_version": "1.3.1",
+	"addon_version": "1.3.2",
 	# Author(s)
 	"addon_author": "Antonio Cascales <antonio.cascales@gmail.com>",
 	# URL for the add-on documentation support
