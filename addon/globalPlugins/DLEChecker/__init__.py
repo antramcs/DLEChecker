@@ -16,7 +16,6 @@ from threading import Thread
 import sys, os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.remove(os.path.dirname(os.path.abspath(__file__)))
 
 try:
 	del sys.modules['html']
@@ -26,6 +25,8 @@ except:
 from bs4 import BeautifulSoup
 
 import string
+
+sys.path.remove(os.path.dirname(os.path.abspath(__file__)))
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	@script(gesture="kb:NVDA+shift+c", description= _("Busca la definición de la palabra seleccionada en el Diccionario de la Lengua Española"), category= _("DLEChecker"))
