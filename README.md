@@ -34,6 +34,11 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.3.2.1.
+
+* Corregido un error que impedía que se cargasen todos los módulos necesarios para el correcto funcionamiento de DLEChecker al eliminar antes de tiempo la ruta del complemento del path de NVDA.
+
+
 ### Versión  1.3.2.
 
 * Modificado un error en el path de NVDA. Quitada la referencia de la ruta del complemento del mismo, a fin de evitar posibles problemas en el futuro.
