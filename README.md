@@ -1,4 +1,4 @@
-﻿# DLEChecker
+# DLEChecker
 
 ## Buscador de definiciones en el Diccionario de la Lengua Española.
 
