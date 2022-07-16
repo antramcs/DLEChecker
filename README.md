@@ -8,7 +8,7 @@ El complemento DLEChecker para NVDA permite a los usuarios consultar de forma r�
 
 Este es  el máximo órgano consultivo en cuanto a la ortografía y la gramática de la misma, el cual se encarga de garantizar una norma común, así como de velar que los cambios que esta experimente no quiebren la esencial unidad que mantiene en todo el ámbito hispánico.
 
-Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado.
+Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado, gracias al diccionario de sinónimos de Wordreference.
 
 ### Modo de uso.
 
