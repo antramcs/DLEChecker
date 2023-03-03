@@ -164,7 +164,7 @@ class NuevaConsulta(wx.Dialog):
 		self.Show()
 	
 	def onAceptar(self, e):
-		terminoABuscar = self.cuadroEdicion.GetValue()
+		terminoABuscar = self.cuadroEdicion.GetValue().lower()
 		if terminoABuscar != "":
 			self.Close()
 			hilo = Hilo(terminoABuscar)
@@ -265,7 +265,7 @@ class Hilo(Thread):
 		cadenaResultante = ""
 		
 		for caracter in texto:
-			if ( caracter in string.ascii_lowercase + string.ascii_uppercase + 'áéíóúüñ ' ):
+			if ( caracter in string.ascii_lowercase + 'áéíóúüñ -' ):
 				cadenaResultante += caracter
 		
 		return cadenaResultante
