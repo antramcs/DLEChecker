@@ -39,16 +39,13 @@ El único atajo disponible por el momento en este complemento, es la combinació
 * Actualizada la compatibilidad de DLEChecker con NVDA 2023.1.0.
 * Modificado el archivo README para dejar constancia de un cambio producido en la versión 1.3.2 faltante.
 
-
 ### Versión 1.3.2.2.
 
 * Actualizada la compatibilidad de DLEChecker con NVDA 2022.1.
 
-
 ### Versión 1.3.2.1.
 
 * Corregido un error que impedía que se cargasen todos los módulos necesarios para el correcto funcionamiento de DLEChecker al eliminar antes de tiempo la ruta del complemento del path de NVDA.
-
 
 ### Versión  1.3.2.
 
