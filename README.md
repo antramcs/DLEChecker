@@ -1,4 +1,4 @@
-﻿# DLEChecker
+# DLEChecker
 
 ## Buscador de definiciones en el Diccionario de la Lengua Española.
 
@@ -34,6 +34,17 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 1.3.2.3.
+
+* Actualizada la compatibilidad de DLEChecker con NVDA 2023.1.0.
+* Modificado el archivo README para dejar constancia de un cambio producido en la versión 1.3.2 faltante.
+
+
+### Versión 1.3.2.2.
+
+* Actualizada la compatibilidad de DLEChecker con NVDA 2022.1.
+
+
 ### Versión 1.3.2.1.
 
 * Corregido un error que impedía que se cargasen todos los módulos necesarios para el correcto funcionamiento de DLEChecker al eliminar antes de tiempo la ruta del complemento del path de NVDA.
@@ -43,6 +54,7 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 * Modificado un error en el path de NVDA. Quitada la referencia de la ruta del complemento del mismo, a fin de evitar posibles problemas en el futuro.
 * Modificado un error que impedía que se mostrasen las definiciones cuando el término era  una locución. Gracias a Sukil Echenique por su contribución.
+* Corregido el título y el estilo de los diálogos de error. Gracias a Sukil Echenique por su contribución.
 
 ### Versión 1.3.1.
 
