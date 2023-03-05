@@ -38,6 +38,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 * Actualizada la compatibilidad de DLEChecker con NVDA 2023.1.0.
 * Modificado el archivo README para dejar constancia de un cambio producido en la versión 1.3.2 faltante.
+* Modificado el complemento para que ponga la palabra buscada en minúsculas incluso en el cuadro de búsqueda, para evitar posibles errores. Gracias a Sukil Echenique por su contribución.
+* Quitado el BOM (Byte Order Mark o Marca de Orden de Bytes) de la ayuda del complemento, para evitar problemas de codificación. Gracias a Sukil Echenique por su contribución.
+* Añadido un párrafo en la ayuda del complemento que aclara que los sinónimos y antónimos se buscan en wordreference. Gracias a Sukil Echenique por su contribución.
+* Corregido un error que ignoraba los guiones del término de búsqueda. Ahora DLEChecker permite buscar prefijos y sufijos. Gracias a Sukil Echenique por su contribución.
 
 ### Versión 1.3.2.2.
 
