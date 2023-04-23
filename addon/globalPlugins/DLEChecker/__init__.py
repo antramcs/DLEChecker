@@ -245,7 +245,7 @@ class Hilo(Thread):
 			datos = html.read().decode('utf-8')
 			bs = BeautifulSoup(datos, 'html.parser')
 			
-			div = bs.find('div', class_="trans clickable")
+			div = bs.find('div', class_="trans esp clickable")
 			lista_sinonimos = div.ul
 			
 			mensaje += "\n\nSinónimos: "
