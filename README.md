@@ -34,6 +34,12 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 2.0.
+
+* Reestructurado el código del complemento para mejorar la obtención de todas las acepciones del término introducido, así como la obtención de los sinónimos y antónimos de cada acepción desde la web de la Real Academia Española.
+* Eliminada la consulta externa a wordreference.com a fin de obtener los sinónimos y antónimos.
+* Modificado el archivo README.md a fin de reflejar el cambio de versión y las últimas correcciones realizadas.
+
 ### Versión 1.3.2.3.
 
 * Actualizada la compatibilidad de DLEChecker con NVDA 2023.1.0.

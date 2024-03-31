@@ -210,23 +210,24 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			message = _("Definiciones de la palabra {palabra}").format(palabra=palabra) + "\n\n"
 			
-			articulos = bs.find_all('article')
+			definiciones = bs.find_all('p', class_="j")
 			
-			if len(articulos) > 0:
-				for articulo in articulos:
-					if articulo.find('table', class_='cnj'):
-						continue
-					
-					message += articulo.header.get_text() + "\n"
-					
-					for parrafo in articulo.find_all('p'):
-						message += parrafo.get_text() + "\n"
-					message += "\n"
-				
-				while message[-1] == '\n':
-					message = message.rstrip()
-				
-				message = self.obtenerSinonimosYAntonimos(palabra, message)
+			if definiciones:
+				for definicion in definiciones:
+					sinonimos = definicion.find('div', class_="sin-header sin-inline")
+
+					if not sinonimos:
+						message += definicion.get_text().strip()+"\n\n"
+					else:
+						sinonimos.extract()
+						filas = sinonimos.find_all('tr')
+						message += definicion.get_text().strip()+"\n"
+
+						for fila in filas:
+							message += fila.get_text().strip()+"\n"
+
+						message += "\n"
+                       
 			else:
 				gui.messageBox(_("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía."), caption = _("¡Error!"), style = wx.ICON_ERROR)
 				return
@@ -235,31 +236,6 @@ class Hilo(Thread):
 		except:
 			wx.CallAfter(mostrarDialogoError, _("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."))
 			return
-	
-	def obtenerSinonimosYAntonimos(self, palabra, mensaje):
-		url = "https://wordreference.com/sinonimos/" + request.quote(palabra)
-		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		
-		try:
-			html = request.urlopen(req)
-			datos = html.read().decode('utf-8')
-			bs = BeautifulSoup(datos, 'html.parser')
-			
-			div = bs.find('div', class_="trans esp clickable")
-			lista_sinonimos = div.ul
-			
-			mensaje += "\n\nSinónimos: "
-			
-			for sinonimo in lista_sinonimos:
-				if sinonimo.get_text() == "":
-					continue
-				
-				mensaje += sinonimo.get_text() + "\n"
-			
-		except:
-			mensaje += "\n😕 No existen sinónimos ni antónimos definidos para esta palabra, o quizá la página esté sufriendo problemas técnicos."
-		
-		return mensaje
 	
 	def limpiarTexto(self, texto):
 		cadenaResultante = ""
