@@ -182,7 +182,6 @@ class Hilo(Thread):
 		super(Hilo, self).__init__()
 		self.daemon = True
 		self.palabra = palabra
-	
 	def run(self):
 		
 		def mostrarDialogoError(mensaje):
@@ -210,38 +209,30 @@ class Hilo(Thread):
 			bs = BeautifulSoup(datos, 'html.parser')
 			message = _("Definiciones de la palabra {palabra}").format(palabra=palabra) + "\n\n"
 			
-			definiciones = bs.find_all('p', class_="j")
+			definiciones = bs.find_all('li', class_=["j", "j2"])
 			
 			if definiciones:
 				for definicion in definiciones:
-					sinonimos = definicion.find('div', class_="sin-header sin-inline")
-
-					if not sinonimos:
-						message += definicion.get_text().strip()+"\n\n"
-					else:
-						sinonimos.extract()
-						filas = sinonimos.find_all('tr')
-						message += definicion.get_text().strip()+"\n"
-
-						for fila in filas:
-							message += fila.get_text().strip()+"\n"
-
-						message += "\n"
-                       
+					contenido = definicion.find('div', class_="c-definitions__item")
+					if contenido:
+						message += contenido.get_text().strip() + "\n\n"
+					sinonimos_div = definicion.find('ul', class_="c-word-list__items")
+					if sinonimos_div:
+						sinonimos = [li.get_text().strip() for li in sinonimos_div.find_all('li')]
+						if sinonimos:
+							message += _("Sinónimos: ") + ", ".join(sinonimos) + "\n\n"
 			else:
-				gui.messageBox(_("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía."), caption = _("¡Error!"), style = wx.ICON_ERROR)
+				gui.messageBox(_("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía."), caption=_("¡Error!"), style=wx.ICON_ERROR)
 				return
 			
 			wx.CallAfter(mostrarDialogoResultado, message)
 		except:
 			wx.CallAfter(mostrarDialogoError, _("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."))
 			return
-	
+
 	def limpiarTexto(self, texto):
 		cadenaResultante = ""
-		
 		for caracter in texto:
-			if ( caracter in string.ascii_lowercase + 'áéíóúüñ -' ):
+			if (caracter in string.ascii_lowercase + 'áéíóúüñ -'):
 				cadenaResultante += caracter
-		
 		return cadenaResultante
