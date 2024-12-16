@@ -34,6 +34,11 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 2.1.
+
+* Modificado el algoritmo principal de DLEChecker para la consulta de términos debido a la modificación de la estructura de la web del Diccionario de la Lengua Española de la RAE. Gracias a Jesús Pavón, @jpavonabian@mst.universoalterno.es, por el Pull Request que ha permitido la actualización del complemento.
+* Corregido un error que impedía desde la versión anterior, la búsqueda de un nuevo término, sin necesidad de su selección previa.
+
 ### Versión 2.0.
 
 * Reestructurado el código del complemento para mejorar la obtención de todas las acepciones del término introducido, así como la obtención de los sinónimos y antónimos de cada acepción desde la web de la Real Academia Española.

@@ -150,15 +150,15 @@ class NuevaConsulta(wx.Dialog):
 		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
 		self.Bind(wx.EVT_BUTTON, self.onCancelar, self.btnCancelar)
 		
-		verticalBoxSizer.Add(self.etiqueta, wx.EXPAND)
-		verticalBoxSizer.Add(self.cuadroEdicion, wx.EXPAND)
+		verticalBoxSizer.Add(self.etiqueta, 0, wx.ALL | wx.EXPAND, 10)
+		verticalBoxSizer.Add(self.cuadroEdicion, 0, wx.ALL | wx.EXPAND, 10)
 		
-		horizontalBoxSizer.Add(self.btnAceptar, 0, wx.CENTRE)
-		horizontalBoxSizer.Add(self.btnCancelar, 0, wx.CENTRE)
+		horizontalBoxSizer.Add(self.btnAceptar, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+		horizontalBoxSizer.Add(self.btnCancelar, 0, wx.ALL | wx.ALIGN_CENTER, 5)
 		
-		verticalBoxSizer.Add(horizontalBoxSizer)
+		verticalBoxSizer.Add(horizontalBoxSizer, 0, wx.ALIGN_CENTER)
 		
-		self.SetSizer(verticalBoxSizer)
+		panel.SetSizer(verticalBoxSizer)
 		
 		self.Centre()
 		self.Show()
