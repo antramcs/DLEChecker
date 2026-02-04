@@ -8,7 +8,7 @@ El complemento DLEChecker para NVDA permite a los usuarios consultar de forma r�
 
 Este es  el máximo órgano consultivo en cuanto a la ortografía y la gramática de la misma, el cual se encarga de garantizar una norma común, así como de velar que los cambios que esta experimente no quiebren la esencial unidad que mantiene en todo el ámbito hispánico.
 
-Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado, gracias al diccionario de sinónimos de Wordreference.
+Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado, incluidos también ahora en la propia definición de la RAE.
 
 ### Modo de uso.
 
@@ -33,6 +33,10 @@ La combinación de teclas NVDA + Shift + C puede ser personalizada a través del
 El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de mostrar el cuadro de diálogo de entrada para introducir el término a buscar, así como de realizar la consulta a la web del Diccionario de la Lengua Española de la RAE.
 
 ## Registro de cambios.
+
+### Versión 2.2.
+
+   * Modificado el complemento para que utilice la libería CloudScraper en vez de la libería BeautifulSoup para raspar la web de la RAE, debido a los últimos cambios sufridos por dicha web, que impedían el correcto uso del complemento. Gracias a Gera (@gera_ar@comunidad.nvda.es) por su inestimable ayuda, pues de no ser por él, que se atrevió a hacer los cambios oportunos mientras no disponía de ordenador, posiblemente esta actualización habría tardado mucho más en ver la luz.
 
 ### Versión 2.1.
 

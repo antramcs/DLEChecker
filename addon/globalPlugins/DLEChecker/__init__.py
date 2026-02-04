@@ -162,7 +162,7 @@ class NuevaConsulta(wx.Dialog):
 		
 		self.Centre()
 		self.Show()
-	
+
 	def onAceptar(self, e):
 		terminoABuscar = self.cuadroEdicion.GetValue().lower()
 		if terminoABuscar != "":
