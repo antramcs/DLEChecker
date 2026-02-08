@@ -14,6 +14,7 @@ from scriptHandler import script
 from urllib import request, parse
 from threading import Thread
 import sys, os
+import re
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,6 +24,8 @@ except:
 	pass
 
 from bs4 import BeautifulSoup
+
+import cloudscraper
 
 import string
 
@@ -182,57 +185,50 @@ class Hilo(Thread):
 		super(Hilo, self).__init__()
 		self.daemon = True
 		self.palabra = palabra
+	
 	def run(self):
-		
-		def mostrarDialogoError(mensaje):
-			gui.messageBox(mensaje, caption=_("¡Error!"), parent=None, style=wx.ICON_ERROR)
-		
 		def mostrarDialogoResultado(mensaje):
 			ventanaMSG = DialogoMsg(gui.mainFrame, _("DLEChecker"), mensaje)
 			gui.mainFrame.prePopup()
 			ventanaMSG.Show()
-		
-		palabra = self.limpiarTexto(self.palabra)
-		argumentos = {"w": palabra}
-		argumentos_codificados = parse.urlencode(argumentos)
-		url = "https://dle.rae.es/?" + argumentos_codificados
-		req = request.Request(url, data=None, headers={"User-Agent": "Mozilla/5.0"})
-		
-		try:
-			html = request.urlopen(req)
-		except:
-			wx.CallAfter(mostrarDialogoError, _("Error. Es posible que la web esté sufriendo problemas técnicos. Inténtalo más tarde."))
-			return
-		
-		try:
-			datos = html.read().decode('utf-8')
-			bs = BeautifulSoup(datos, 'html.parser')
-			message = _("Definiciones de la palabra {palabra}").format(palabra=palabra) + "\n\n"
 			
-			definiciones = bs.find_all('li', class_=["j", "j2"])
-			
-			if definiciones:
-				for definicion in definiciones:
-					contenido = definicion.find('div', class_="c-definitions__item")
-					if contenido:
-						message += contenido.get_text().strip() + "\n\n"
-					sinonimos_div = definicion.find('ul', class_="c-word-list__items")
-					if sinonimos_div:
-						sinonimos = [li.get_text().strip() for li in sinonimos_div.find_all('li')]
-						if sinonimos:
-							message += _("Sinónimos: ") + ", ".join(sinonimos) + "\n\n"
-			else:
-				gui.messageBox(_("No existen definiciones en el Diccionario de la Lengua Española para la palabra introducida. Revisa la ortografía."), caption=_("¡Error!"), style=wx.ICON_ERROR)
-				return
-			
-			wx.CallAfter(mostrarDialogoResultado, message)
-		except:
-			wx.CallAfter(mostrarDialogoError, _("Error al intentar obtener la definición de la palabra. Comprueba la ortografía, así como que la palabra existe."))
-			return
+		url = f"https://dle.rae.es/?w={self.palabra}"
+		scraper = cloudscraper.create_scraper()
+		response = scraper.get(url)
+		soup = BeautifulSoup(response.text, "html.parser")
 
-	def limpiarTexto(self, texto):
-		cadenaResultante = ""
-		for caracter in texto:
-			if (caracter in string.ascii_lowercase + 'áéíóúüñ -'):
-				cadenaResultante += caracter
-		return cadenaResultante
+		# Definiciones
+		definiciones = [li.get_text(" ", strip=True) for li in soup.select("ol.c-definitions li.j")]
+
+		# Sinónimos
+		sinonimos = [sin.get_text(strip=True) for sin in soup.select("ul.c-word-list__items span.sin")]
+
+		# Antónimos
+		antonimos = [ant.get_text(strip=True) for ant in soup.select("ul.c-word-list__items span.ant")]
+
+		# Extra: buscar "Ant.:" dentro de las definiciones
+		for d in definiciones:
+			match = re.search(r"Ant\.: (.+)", d)
+			if match:
+				extra_ants = [a.strip(" .") for a in match.group(1).split(",")]
+				antonimos.extend(extra_ants)
+
+		# Eliminar duplicados manteniendo orden
+		sinonimos = list(dict.fromkeys(sinonimos))
+		antonimos = list(dict.fromkeys(antonimos))
+
+		# Construir texto final
+		partes = ["Definiciones:"]
+		partes.extend([f"- {d}" for d in definiciones])
+		partes.append("")
+
+		partes.append("Sinónimos:")
+		partes.append(", ".join(sinonimos) if sinonimos else "No hay sinónimos")
+		partes.append("")
+
+		partes.append("Antónimos:")
+		partes.append(", ".join(antonimos) if antonimos else "No hay antónimos")
+
+		message = "\n".join(partes)
+		wx.CallAfter(mostrarDialogoResultado, message)
+		# return
