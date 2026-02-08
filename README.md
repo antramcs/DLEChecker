@@ -34,6 +34,10 @@ El único atajo disponible por el momento en este complemento, es la combinació
 
 ## Registro de cambios.
 
+### Versión 2.2.
+
+* Modificado el complemento para utilizar la librería Cloudscraper en vez de BeautifulSoup a fin de raspar la web de la RAE, debido a los recientes cambios en ésta, que impedían obtener las definiciones tal y como se venía haciendo desde los inicios del complemento. Gracias a Gera (@gera_ar@comunidad.nvda.es) por su inestimable ayuda y tomarse la molestia de realizar las modificaciones pertinentes para que el complemento funcione de nuevo lo antes posible, mientras yo no disponía de ordenador.
+
 ### Versión 2.1.
 
 * Modificado el algoritmo principal de DLEChecker para la consulta de términos debido a la modificación de la estructura de la web del Diccionario de la Lengua Española de la RAE. Gracias a Jesús Pavón, @jpavonabian@mst.universoalterno.es, por el Pull Request que ha permitido la actualización del complemento.
