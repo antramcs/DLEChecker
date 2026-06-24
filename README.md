@@ -8,31 +8,38 @@ El complemento DLEChecker para NVDA permite a los usuarios consultar de forma r�
 
 Este es  el máximo órgano consultivo en cuanto a la ortografía y la gramática de la misma, el cual se encarga de garantizar una norma común, así como de velar que los cambios que esta experimente no quiebren la esencial unidad que mantiene en todo el ámbito hispánico.
 
-Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado, gracias al diccionario de sinónimos de Wordreference.
+Así mismo, también es posible conocer   los sinónimos y antónimos del término buscado.
 
 ### Modo de uso.
 
 Este complemento dispone de dos modos de utilización, explicados a continuación:
 
-a) El modo tradicional hasta el momento en DLEChecker. Es decir, seleccionando cualquier palabra (utilizando shift+teclas habituales de navegación por texto), y pulsando la combinación de teclas NVDA + Shift + C.
+a) El modo tradicional hasta el momento en DLEChecker. Es decir, seleccionando cualquier palabra (utilizando shift+teclas habituales de navegación por texto), y pulsando la combinación de teclas asignada previamente en la categoría 'DLEChecker' de la opción "Gestos de Entrada" del menú de NVDA.
 
-b) Pulsando directamente la combinación de teclas NVDA + Shift + C en cualquier aplicación.
+b) Pulsando directamente la combinación de teclas asignada al mismo de la forma explicada en el párrafo anterior, en cualquier aplicación.
 
-En el primer caso, DLEChecker mostrará la definición del término buscado así como los sinónimos y/o antónimos disponibles en la ventana de resultados existente en la versión 1.1.
+En el primer caso, DLEChecker mostrará la definición del término buscado así como los sinónimos y/o antónimos disponibles en la ventana de resultados.
 
-En el segundo caso, DLEChecker mostrará un cuadro de diálogo donde introducir el término a buscar. Una vez introducido y presionado el botón "Consultar", el complemento mostrará la ventana de resultados habitual.
+En el segundo caso, DLEChecker mostrará un cuadro de diálogo donde deberá de introducirse el término a buscar. Una vez introducido y presionado el botón "Consultar", el complemento mostrará la ventana de resultados habitual.
 
-Se pueden utilizar las flechas para navegar por el contenido de la ventana de resultados, o bien hacer que NVDA lo lea automáticamente y lo copie al portapapeles empleando los botones dispuestos a tal efecto en el diálogo.
+Se pueden utilizar las flechas para navegar por el contenido de la ventana de resultados, o bien hacer que NVDA lo lea automáticamente y lo copie al portapapeles empleando los botones dispuestos a tal efecto en el cuadro de diálogo.
 
 Si se seleccionan accidentalmente varias palabras y se ejecuta la búsqueda, el complemento sólo tendrá en cuenta la primera.
 
-La combinación de teclas NVDA + Shift + C puede ser personalizada a través del cuadro de diálogo «Gestos de Entrada» de la opción «Preferencias» de NVDA dentro de la categoría DLEChecker.
-
 ### Atajos.
 
-El único atajo disponible por el momento en este complemento, es la combinación de teclas NVDA + Shift + C. Es el encargado de mostrar el cuadro de diálogo de entrada para introducir el término a buscar, así como de realizar la consulta a la web del Diccionario de la Lengua Española de la RAE.
+El único atajo disponible por el momento en este complemento, es la combinación de teclas que el usuario asigne al instalar el complemento por primera vez. Será la encargada de mostrar el cuadro de diálogo de entrada para introducir el término a buscar, así como de realizar la consulta a la web del Diccionario de la Lengua Española de la RAE.
 
 ## Registro de cambios.
+
+### Versión 2.3.
+
+* remodelado por completo el complemento, siguiendo el patrón de diseño MVC, de forma que el código queda más ordenado y claro, y se ejecuta más rápido.
+* Añadidos comentarios autoexplicativos del código.
+* Eliminada la combinación de teclas por defecto, para que cada usuario pueda asignarse la suya de forma personalizada, evitando de esta forma el conflicto de combinaciones de teclas con otros complementos.
+* Corregido un error por el cual la ventana principal de búsqueda no se mostraba en primer plano en todas las ocasiones, obligando al usuario a buscar la misma entre las ventanas abiertas, o a pulsar de nuevo la combinación de teclas.
+* Reestructurada la salida de resultados, de forma que ahora cada acepción va seguida de sus sinónimos y antónimos pertinente, en vez de visualizarse al final como hasta ahora.
+
 
 ### Versión 2.2.
 

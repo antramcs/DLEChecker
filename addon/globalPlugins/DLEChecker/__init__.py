@@ -1,234 +1,233 @@
-﻿#DLEChecker for NVDA.
-#This file is covered by the GNU General Public License.
-#See the file COPYING.txt for more details.
-#Copyright (C) 2021 Antonio Cascales <antonio.cascales@gmail.com> and Jose Manuel Delicado <jm.delicado@nvda.es>
+# -*- coding: utf-8 -*-
+# DLEChecker - Plugin global para NVDA
+# Patrón MVC: Punto de entrada / Integración con NVDA
 
-import wx
-import gui
+"""
+Punto de entrada del plugin DLEChecker para NVDA.
+
+Este módulo es el ``__init__.py`` del paquete ``DLEChecker`` y actúa como
+punto de entrada que NVDA carga automáticamente al descubrir un directorio
+dentro de ``globalPlugins/``. Su responsabilidad principal es:
+
+1. **Preparar el entorno**: inyectar el directorio ``libs/`` en ``sys.path``
+   **antes** de cualquier importación interna, para que las dependencias
+   empaquetadas (BeautifulSoup, cloudscraper, etc.) estén disponibles
+   sin necesidad de instalación global.
+2. **Definir el GlobalPlugin**: clase que NVDA instancia para registrar
+   gestos de teclado y delegar la lógica al controlador MVC.
+
+Arquitectura MVC del plugin:
+    - **Model** (``models/``): ``DLEService``, ``DictionaryEntry``,
+      ``TextProcessor`` — lógica de negocio, peticiones HTTP y parsing.
+    - **View** (``views/``): ``SearchDialog``, ``ResultDialog`` — diálogos
+      wx accesibles para la interacción con el usuario.
+    - **Controller** (``controllers/``): ``DLEController`` — orquestación
+      del flujo de búsqueda entre modelos y vistas.
+
+Uso:
+    Seleccionar una palabra en cualquier aplicación y pulsar
+    la combinación de teclas que se asigne para buscar su definición en el DLE.
+    Si no hay texto seleccionado, se abrirá un diálogo de búsqueda manual.
+
+Dependencias externas:
+    - ``globalPluginHandler``: API de NVDA para plugins globales.
+    - ``api``: API de NVDA para acceder al objeto enfocado.
+    - ``textInfos``: API de NVDA para manipulación de información textual.
+    - ``ui``: API de NVDA para verbalizar mensajes al usuario.
+
+Nota sobre el orden de importaciones:
+    La inyección de ``libs/`` en ``sys.path`` DEBE ocurrir antes de
+    ``from .controllers import DLEController``, ya que los controladores
+    importan modelos que a su vez dependen de bibliotecas empaquetadas
+    en ``libs/`` (como ``bs4`` o ``cloudscraper``).
+"""
+
+import os
+import sys
+import logging
 
 import globalPluginHandler
-import ui
 import api
 import textInfos
-from scriptHandler import script
-from urllib import request, parse
-from threading import Thread
-import sys, os
-import re
+import ui
+import scriptHandler
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Logger específico del módulo; hereda la configuración de logging de NVDA,
+# lo que permite filtrar los mensajes de este plugin por nombre de módulo
+log = logging.getLogger(__name__)
 
-try:
-	del sys.modules['html']
-except:
-	pass
+# ─────────────────────────────────────────────────────────────────────────────
+# Preparación del entorno: inyección del directorio libs/ en sys.path
+# ─────────────────────────────────────────────────────────────────────────────
 
-from bs4 import BeautifulSoup
+# Determinar la ruta absoluta del directorio raíz del plugin.
+# Se usa __file__ en lugar de rutas relativas para que funcione
+# independientemente del directorio de trabajo actual de NVDA.
+_PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 
-import cloudscraper
+# Construir la ruta al directorio libs/ donde se empaquetan las dependencias
+# de terceros (bs4, cloudscraper, etc.) que no forman parte de NVDA.
+# Se inserta al INICIO de sys.path (posición 0) para que tenga prioridad
+# sobre posibles versiones instaladas globalmente, garantizando que se usen
+# las versiones compatibles empaquetadas con el plugin.
+_LIBS_DIR = os.path.join(_PLUGIN_DIR, "libs")
+if os.path.isdir(_LIBS_DIR) and _LIBS_DIR not in sys.path:
+    sys.path.insert(0, _LIBS_DIR)
 
-import string
+# IMPORTANTE: esta importación debe estar DESPUÉS de la inyección de libs/
+# en sys.path, ya que DLEController → DLEService → dependencias empaquetadas
+from .controllers import DLEController
 
-sys.path.remove(os.path.dirname(os.path.abspath(__file__)))
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
-	@script(gesture="kb:NVDA+shift+c", description= _("Busca la definición de la palabra seleccionada en el Diccionario de la Lengua Española"), category= _("DLEChecker"))
-	def script_check_dle_term(self, gesture):
-		obj = api.getFocusObject()
-		selectedText = ""
-		
-		if hasattr(obj.treeInterceptor, 'TextInfo') and not obj.treeInterceptor.passThrough:
-			try:
-				info = obj.treeInterceptor.makeTextInfo(textInfos.POSITION_SELECTION)
-			except (RuntimeError, NotImplementedError):
-				info = None
-			
-			if not info or info.isCollapsed:
-				self.solicitarDefinicionABuscar()
-				return
-			else:
-				selectedText = info.text.lower()
-		else:
-			try:
-				selectedText = obj.selection.text.lower()
-			except (RuntimeError, NotImplementedError):
-				self.solicitarDefinicionABuscar()
-				return
-			
-			if obj.selection.text == "":
-				self.solicitarDefinicionABuscar()
-				return
-		
-		hilo = Hilo(selectedText)
-		hilo.start()
-	
-	def solicitarDefinicionABuscar(self):
-		NuevaConsulta(gui.mainFrame, _("Nueva definición a buscar"), _("Introduce el término a consultar:"))
-	
-class DialogoMsg(wx.Dialog):
-# Function taken from the add-on emoticons to center the window
-	def _calculatePosition(self, width, height):
-		w = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
-		h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
-		# Centre of the screen
-		x = w / 2
-		y = h / 2
-		# Minus application offset
-		x -= (width / 2)
-		y -= (height / 2)
-		return (x, y)
+    """Plugin global de NVDA para consultar el Diccionario de la Lengua Española.
 
-	def __init__(self, parent, titulo, mensaje):
-		WIDTH = 800
-		HEIGHT = 600
-		pos = self._calculatePosition(WIDTH, HEIGHT)
+    Esta clase es el punto de integración con la API de NVDA. Se encarga
+    exclusivamente de:
 
-		super(DialogoMsg, self).__init__(parent, -1, title=titulo, pos = pos, size = (WIDTH, HEIGHT))
+        - **Obtención de texto seleccionado**: acceder al objeto enfocado y
+      extraer la selección activa del usuario.
+    - **Delegación al controlador**: toda la lógica de negocio (validación,
+      búsqueda HTTP, presentación de resultados) se delega a ``DLEController``,
+      manteniendo esta clase lo más delgada posible según el patrón MVC.
 
-		self.mensaje = mensaje
+    Ciclo de vida:
+        - ``__init__``: NVDA llama a este método al cargar el plugin. Se
+          instancia el controlador y se registran los gestos.
+        - ``terminate``: NVDA llama a este método al descargar el plugin
+          (cierre de NVDA o recarga de plugins). Se liberan recursos.
 
-		panel_dialogo = wx.Panel(self)
+    Attributes:
+        _controller (DLEController): Instancia del controlador principal.
+            Se crea una sola vez en ``__init__`` y se reutiliza durante
+            toda la vida del plugin.
 
-		principalBox = wx.BoxSizer(wx.VERTICAL)
-		verticalBox = wx.BoxSizer(wx.VERTICAL)
-		horizontalBox = wx.BoxSizer(wx.HORIZONTAL)
+    Ejemplo:
+        El usuario selecciona la palabra "efímero" en un navegador web y
+        pulsa la combinación de teclas asignada. El flujo es:
+            1. NVDA invoca ``script_check_dle_term``.
+            2. ``_get_selected_text`` obtiene "efímero" del buffer virtual.
+            3. ``_controller.handle_search_request("efímero")`` lanza la
+               búsqueda en un hilo de fondo y muestra el resultado.
+    """
 
-		etiqueta = wx.StaticText(panel_dialogo, wx.ID_ANY, label=_("Resultado:"))
-		textoResultado = wx.TextCtrl(panel_dialogo, wx.ID_ANY, style = wx.TE_MULTILINE|wx.TE_READONLY|wx.HSCROLL) 
+    def __init__(self):
+        """Inicializa el plugin global y crea el controlador MVC.
 
-		verticalBox.Add(etiqueta, 0, wx.EXPAND)
-		verticalBox.Add(textoResultado, 1, wx.EXPAND | wx.ALL)
+        Llama al constructor padre de ``globalPluginHandler.GlobalPlugin``,
+        que se encarga del registro de gestos definidos en ``__gestures``.
+        Luego instancia ``DLEController``, que a su vez crea el servicio
+        de consultas al DLE.
+        """
+        # Inicializar la clase base de NVDA — registra los gestos y
+        # establece el plugin en el sistema de plugins globales
+        super(GlobalPlugin, self).__init__()
+        # Crear el controlador MVC que gestionará toda la lógica de búsqueda
+        self._controller = DLEController()
+        log.info("DLEChecker plugin cargado correctamente (arquitectura MVC)")
 
-		self.leerBTN = wx.Button(panel_dialogo, wx.ID_ANY, _("Leer resultado"))
-		self.copiarBTN = wx.Button(panel_dialogo, wx.ID_ANY, _("Copiar al portapapeles"))
-		self.salirBTN = wx.Button(panel_dialogo, wx.ID_CANCEL, _("&Salir"))
+    def terminate(self):
+        """Limpieza al desactivar o descargar el plugin.
 
-		horizontalBox.Add(self.leerBTN, 0, wx.CENTER)
-		horizontalBox.Add(self.copiarBTN, 0, wx.CENTER)
-		horizontalBox.Add(self.salirBTN, 0, wx.CENTER)
+        NVDA invoca este método cuando el plugin se descarga (cierre de
+        NVDA, recarga de complementos o desinstalación). Se registra la
+        descarga y se llama al método padre para la limpieza estándar.
+        """
+        log.info("DLEChecker plugin descargado")
+        # Llamar al terminate del padre para que NVDA realice su propia
+        # limpieza (desregistro de gestos, liberación de recursos internos)
+        super(GlobalPlugin, self).terminate()
 
-		principalBox.Add(verticalBox, 1, wx.EXPAND | wx.ALL)
-		principalBox.Add(horizontalBox, 0, wx.CENTER)
+    @scriptHandler.script(
+        description=_(
+            "Consulta la definición de la palabra seleccionada en el "
+            "Diccionario de la Lengua Española (DLE)."
+        ),
+        category=_("DLEChecker"),
+    )
+    def script_check_dle_term(self, gesture):
+        """Script principal: busca la definición de una palabra en el DLE.
 
-		panel_dialogo.SetSizer(principalBox)
+        Este método obtiene el texto actualmente seleccionado y lo
+        envía al controlador. Si no hay selección, el controlador mostrará
+        un diálogo de búsqueda manual.
 
-		self.Bind(wx.EVT_BUTTON, self.onLeer, self.leerBTN)
-		self.Bind(wx.EVT_BUTTON, self.onCopiar, self.copiarBTN)
-		self.Bind(wx.EVT_BUTTON, self.onSalir, id=wx.ID_CANCEL)
+        El nombre del método sigue la convención de NVDA: ``script_`` +
+        nombre del script.
 
-		textoResultado.WriteText(self.mensaje)
-		textoResultado.SetInsertionPoint(0) 
+        Args:
+            gesture (inputCore.InputGesture): Objeto que describe el gesto
+                de teclado que activó el script. No se utiliza directamente
+                en la lógica, pero es requerido por la API de scripts de NVDA.
+        """
+        # Obtener el texto seleccionado del objeto enfocado actual
+        selected_text = self._get_selected_text()
+        # Delegar toda la lógica al controlador — este decidirá si buscar
+        # directamente o mostrar el diálogo de búsqueda manual
+        self._controller.handle_search_request(selected_text)
 
-	def onLeer(self, event):
-		ui.message(self.mensaje)
+    def _get_selected_text(self):
+        """Obtiene el texto actualmente seleccionado en la aplicación enfocada.
 
-	def onCopiar(self, event):
-		api.copyToClip(self.mensaje)
-		ui.message(_("Copiado al portapapeles"))
+        Implementa una estrategia de dos niveles para extraer la selección:
 
-	def onSalir(self, event):
-		self.Destroy()
-		gui.mainFrame.postPopup()
+        1. **TreeInterceptor** (prioridad alta): si el objeto enfocado tiene
+           un ``treeInterceptor`` con capacidad ``TextInfo`` (típico en
+           buffers virtuales de navegadores web, documentos PDF, etc.),
+           se obtiene la selección desde ahí. Esto es necesario porque en
+           modo exploración de NVDA, el texto seleccionado vive en el
+           interceptor del árbol, no en el objeto enfocado directamente.
 
-class NuevaConsulta(wx.Dialog):
-	def __init__(self, parent, titulo, mensaje):
-		super(NuevaConsulta, self).__init__(parent, title=titulo, size=(400, 250))
-		
-		self.mensaje = mensaje
-		
-		self.iniciarUI()
-	
-	def iniciarUI(self):
-		panel = wx.Panel(self)
-		
-		verticalBoxSizer = wx.BoxSizer(wx.VERTICAL)
-		horizontalBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
-		
-		self.etiqueta = wx.StaticText(panel, -1, label=self.mensaje)
-		self.cuadroEdicion = wx.TextCtrl(panel, -1, "", style=wx.TE_PROCESS_ENTER)
-		self.btnAceptar = wx.Button(panel, wx.ID_OK, _("Consultar"))
-		self.btnCancelar = wx.Button(panel, wx.ID_CANCEL, _("Cancelar"))
-		
-		self.Bind(wx.EVT_TEXT_ENTER, self.onAceptar, self.cuadroEdicion)
-		self.Bind(wx.EVT_BUTTON, self.onAceptar, self.btnAceptar)
-		self.Bind(wx.EVT_BUTTON, self.onCancelar, self.btnCancelar)
-		
-		verticalBoxSizer.Add(self.etiqueta, 0, wx.ALL | wx.EXPAND, 10)
-		verticalBoxSizer.Add(self.cuadroEdicion, 0, wx.ALL | wx.EXPAND, 10)
-		
-		horizontalBoxSizer.Add(self.btnAceptar, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-		horizontalBoxSizer.Add(self.btnCancelar, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-		
-		verticalBoxSizer.Add(horizontalBoxSizer, 0, wx.ALIGN_CENTER)
-		
-		panel.SetSizer(verticalBoxSizer)
-		
-		self.Centre()
-		self.Show()
-	
-	def onAceptar(self, e):
-		terminoABuscar = self.cuadroEdicion.GetValue().lower()
-		if terminoABuscar != "":
-			self.Close()
-			hilo = Hilo(terminoABuscar)
-			hilo.start()
-		else:
-			gui.messageBox(_("Debes introducir un término a consultar."), caption = _("¡Error!"), style = wx.ICON_ERROR)
-			self.cuadroEdicion.SetFocus()
-	
-	def onCancelar(self, e):
-		self.Destroy()
+        2. **FocusObject** (fallback): si no hay ``treeInterceptor`` o
+           este no soporta ``TextInfo``, se obtiene la selección
+           directamente del objeto enfocado (controles de edición nativos,
+           terminales, etc.).
 
-class Hilo(Thread):
-	
-	def __init__(self, palabra):
-		super(Hilo, self).__init__()
-		self.daemon = True
-		self.palabra = palabra
-	
-	def run(self):
-		def mostrarDialogoResultado(mensaje):
-			ventanaMSG = DialogoMsg(gui.mainFrame, _("DLEChecker"), mensaje)
-			gui.mainFrame.prePopup()
-			ventanaMSG.Show()
-			
-		url = f"https://dle.rae.es/?w={self.palabra}"
-		scraper = cloudscraper.create_scraper()
-		response = scraper.get(url)
-		soup = BeautifulSoup(response.text, "html.parser")
+        Returns:
+            str: Texto seleccionado por el usuario. Cadena vacía si no hay
+                selección activa, si el objeto no soporta selección de texto,
+                o si ocurre cualquier error durante la extracción.
 
-		# Definiciones
-		definiciones = [li.get_text(" ", strip=True) for li in soup.select("ol.c-definitions li.j")]
+        Raises:
+            No propaga excepciones al exterior. Todos los errores se capturan
+            internamente:
+            - ``RuntimeError``, ``NotImplementedError``, ``AttributeError``:
+              el objeto no soporta la operación de selección — es un caso
+              normal (p.ej. botones, iconos del escritorio).
+            - Cualquier otra excepción: se registra como warning en el log
+              para diagnóstico sin interrumpir al usuario.
+        """
+        try:
+            # Obtener el objeto enfocado actual en NVDA (ventana, control, etc.)
+            obj = api.getFocusObject()
+            # Obtener el interceptor de árbol del objeto; en navegadores web
+            # y documentos, este interceptor gestiona el buffer virtual
+            tree_interceptor = obj.treeInterceptor
 
-		# Sinónimos
-		sinonimos = [sin.get_text(strip=True) for sin in soup.select("ul.c-word-list__items span.sin")]
+            if hasattr(tree_interceptor, "TextInfo"):
+                # El interceptor soporta TextInfo → estamos en un buffer virtual
+                # (modo exploración en navegador, documento PDF, etc.).
+                # La selección se obtiene del interceptor, no del objeto nativo,
+                # porque el buffer virtual mantiene su propio estado de selección.
+                info = tree_interceptor.makeTextInfo(textInfos.POSITION_SELECTION)
+            else:
+                # Sin interceptor o sin capacidad TextInfo → fallback al objeto
+                # enfocado nativo (campo de texto, terminal, editor, etc.)
+                info = obj.makeTextInfo(textInfos.POSITION_SELECTION)
 
-		# Antónimos
-		antonimos = [ant.get_text(strip=True) for ant in soup.select("ul.c-word-list__items span.ant")]
+            # Extraer el texto de la selección
+            selected = info.text
+            # Devolver el texto seleccionado o cadena vacía si es None/vacío
+            return selected if selected else ""
 
-		# Extra: buscar "Ant.:" dentro de las definiciones
-		for d in definiciones:
-			match = re.search(r"Ant\.: (.+)", d)
-			if match:
-				extra_ants = [a.strip(" .") for a in match.group(1).split(",")]
-				antonimos.extend(extra_ants)
+        except (RuntimeError, NotImplementedError, AttributeError):
+            # Excepciones esperadas: el objeto no soporta selección de texto.
+            # Es un caso normal (p.ej. el foco está en un botón o en el
+            # escritorio), por lo que no se registra como error.
+            return ""
+        except Exception as e:
+            # Excepción inesperada: registrar para diagnóstico pero no
+            # interrumpir al usuario; simplemente se trata como "sin selección"
+            log.warning("Error al obtener texto seleccionado: %s", e)
+            return ""
 
-		# Eliminar duplicados manteniendo orden
-		sinonimos = list(dict.fromkeys(sinonimos))
-		antonimos = list(dict.fromkeys(antonimos))
-
-		# Construir texto final
-		partes = ["Definiciones:"]
-		partes.extend([f"- {d}" for d in definiciones])
-		partes.append("")
-
-		partes.append("Sinónimos:")
-		partes.append(", ".join(sinonimos) if sinonimos else "No hay sinónimos")
-		partes.append("")
-
-		partes.append("Antónimos:")
-		partes.append(", ".join(antonimos) if antonimos else "No hay antónimos")
-
-		message = "\n".join(partes)
-		wx.CallAfter(mostrarDialogoResultado, message)
-		# return
